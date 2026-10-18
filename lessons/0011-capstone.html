@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 11 课 · 毕业项目：完整开源发布流程</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1><span class="lesson-no">11</span> · 毕业项目：完整开源发布流程</h1>
+<p style="font-family:var(--sans);color:var(--ink-soft);margin-top:-0.5rem;">
+预计用时：60 分钟 · 前置：第 1-10 课全部内容
+</p>
+
+<div class="callout blue">
+<span class="label">毕业考核</span>
+不查任何资料，独立走完一个真实功能的"开发 → 合并 → 发布 → 部署"全流程。卡住了允许查速查表，但每一步都要能说出"为什么"。
+</div>
+
+<h2>毕业任务清单</h2>
+
+<ol class="tasklist">
+  <li><strong>开分支</strong>：为你的项目想一个小新功能（改个页面文案、加个说明段落都算），<code>git switch -c feature-graduation</code>。</li>
+  <li><strong>规范提交</strong>：在分支上完成功能，用 <code>feat: ...</code> 格式提交至少 2 次。</li>
+  <li><strong>合并</strong>：切回 main，merge 分支（如遇冲突，独立解决）。删除已合并分支。</li>
+  <li><strong>CI 验证</strong>：push，去 Actions 页面确认流水线全绿。</li>
+  <li><strong>发布</strong>：打 tag <code>v1.0.0</code> 并推送，触发自动 Release（或手动发布一次）。</li>
+  <li><strong>CD 验证</strong>：确认部署产物已更新（Pages 页面能看到你的新功能）。</li>
+  <li><strong>事故演习</strong>：在沙盒目录里演示——"撤销一个已 push 的提交"该用什么命令？说给教练听你的推理（答案在<a href="../reference/undo-cheatsheet.html">撤销速查表</a>底部，先自己答）。</li>
+</ol>
+
+<h2>毕业后的你已掌握</h2>
+
+<table>
+  <tr><th>能力</th><th>来源</th></tr>
+  <tr><td>四个区域心智模型 + 完整 push/pull 工作流</td><td>01</td></tr>
+  <tr><td>.gitignore、撤销、规范提交信息</td><td>02</td></tr>
+  <tr><td>分支开发 + 合并 + 冲突解决</td><td>03-04</td></tr>
+  <tr><td>远程管理与 SSH 免密</td><td>05</td></tr>
+  <tr><td>stash / amend / cherry-pick / reset / revert</td><td>06-07</td></tr>
+  <tr><td>开源仓库门面 + tag/Release</td><td>08</td></tr>
+  <tr><td>CI 自动验货 + CD 自动部署 + Secrets</td><td>09-10</td></tr>
+</table>
+
+<h2>进阶路线（毕业后的方向，随时找我开课）</h2>
+
+<ul>
+  <li><strong>Pull Request 工作流</strong>：即使单人项目也用 PR 合并（GitHub 网页上点按钮合并），这是开源协作的标准姿势。</li>
+  <li><strong>rebase 与历史美化</strong>：<code>git rebase -i</code> 整理提交历史（先通关 Learn Git Branching 的 rebase 章节）。</li>
+  <li><strong>fork + upstream</strong>：给别人的开源项目提第一个 PR。</li>
+  <li><strong>Actions 进阶</strong>：矩阵测试、缓存、定时任务、多环境部署。</li>
+</ul>
+
+<div class="callout green">
+<span class="label">社区</span>
+毕业后建议加入 <a href="https://github.community/">GitHub Community</a> 或 <a href="https://www.reddit.com/r/git/">r/git</a>，真实项目里遇到的问题在那里都能找到同类。第一次帮别人解答 Git 问题的那天，你的存储强度就真正成型了。
+</div>
+
+<div class="footer-nav">
+上一课：<a href="./0010-actions-deploy.html">10 自动部署实战</a> · 全部速查表：<a href="../reference/git-zones.html">区域</a> / <a href="../reference/undo-cheatsheet.html">撤销</a> / <a href="../reference/branching-cheatsheet.html">分支</a> / <a href="../reference/github-actions-cheatsheet.html">Actions</a>
+</div>
+
+</body>
+</html>

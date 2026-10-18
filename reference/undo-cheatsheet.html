@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>速查表 · 撤销与急救</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>速查表 · 撤销与急救</h1>
+
+<h2>按场景选命令</h2>
+<table>
+  <tr><th>场景</th><th>命令</th><th>危险性</th></tr>
+  <tr><td>丢弃工作区某文件的改动</td><td><code>git restore 文件</code></td><td>⚠️ 改动不可找回</td></tr>
+  <tr><td>取消 add（改动保留）</td><td><code>git restore --staged 文件</code></td><td>安全</td></tr>
+  <tr><td>修改最后一次提交（未 push）</td><td><code>git commit --amend</code></td><td>安全（限未 push）</td></tr>
+  <tr><td>撤销提交，改动退回暂存区外</td><td><code>git reset HEAD~1</code></td><td>安全</td></tr>
+  <tr><td>撤销提交，改动留在暂存区</td><td><code>git reset --soft HEAD~1</code></td><td>安全</td></tr>
+  <tr><td>撤销提交并销毁改动</td><td><code>git reset --hard HEAD~1</code></td><td>☠️ 改动蒸发</td></tr>
+  <tr><td><strong>撤销已 push 的提交</strong></td><td><code>git revert 编号</code></td><td>✅ 唯一安全答案</td></tr>
+  <tr><td>hard reset 后悔了</td><td><code>git reflog</code> 找编号 → <code>git reset --hard 编号</code></td><td>救命药</td></tr>
+  <tr><td>放弃进行中的 merge</td><td><code>git merge --abort</code></td><td>安全</td></tr>
+  <tr><td>停止跟踪已误提交的文件</td><td><code>git rm --cached 文件</code> + 写 .gitignore</td><td>安全（磁盘文件保留）</td></tr>
+  <tr><td>临时收起未提交改动</td><td><code>git stash</code> / <code>git stash pop</code></td><td>安全</td></tr>
+</table>
+
+<h2>保命法则</h2>
+<div class="callout">
+<strong>已 push 的历史只追加、不改写。</strong>本地 → reset/amend 随意；远程 → 一律 revert。永远不轻易用 <code>push --force</code>。
+</div>
+
+<div class="footer-nav">来源：<a href="../lessons/0002-gitignore-undo-commit-message.html">02</a> · <a href="../lessons/0006-stash-amend-cherry-pick.html">06</a> · <a href="../lessons/0007-undo-emergency.html">07</a> · 事故大全：<a href="https://ohshitgit.com/zh">Oh Shit Git!</a></div>
+
+</body>
+</html>

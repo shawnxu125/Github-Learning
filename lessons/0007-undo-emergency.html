@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 7 课 · 撤销事故：reset vs revert</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1><span class="lesson-no">07</span> · 撤销事故：reset vs revert</h1>
+<p style="font-family:var(--sans);color:var(--ink-soft);margin-top:-0.5rem;">
+预计用时：40 分钟 · 前置：<a href="./0002-gitignore-undo-commit-message.html">第 2 课</a> · 速查表：<a href="../reference/undo-cheatsheet.html">撤销速查表</a>
+</p>
+
+<div class="callout blue">
+<span class="label">本课目标</span>
+掌握两个最强大也最危险的撤销命令，并记住一条保命法则：<strong>本地用 reset，已推送用 revert</strong>。
+</div>
+
+<h2>1. reset：时光机（仅限本地）</h2>
+
+<p><code>git reset</code> 把当前分支的指针挪回过去的某个提交。三种模式的区别在于"工作区和暂存区的文件要不要跟着变"：</p>
+
+<table>
+  <tr><th>模式</th><th>命令</th><th>提交记录</th><th>改动内容</th></tr>
+  <tr><td><strong>mixed</strong>（默认）</td><td><code>git reset HEAD~1</code></td><td>撤销提交</td><td>改动保留在暂存区外，文件不动 ✅安全</td></tr>
+  <tr><td><strong>soft</strong></td><td><code>git reset --soft HEAD~1</code></td><td>撤销提交</td><td>改动保留在暂存区，可直接重新 commit</td></tr>
+  <tr><td><strong>hard</strong> ⚠️</td><td><code>git reset --hard HEAD~1</code></td><td>撤销提交</td><td><strong>改动直接蒸发，不可找回</strong></td></tr>
+</table>
+
+<p><code>HEAD~1</code> 表示"往回 1 个提交"，<code>HEAD~3</code> 是往回 3 个，也可以写具体提交编号。</p>
+
+<div class="callout">
+<span class="label">保命法则</span>
+<strong>已经 push 到 GitHub 的提交，不要用 reset 改写。</strong>改写后本地和远程历史分叉，push 会被拒绝，强推（--force）会毁掉别人的工作。已推送的提交用下面的 revert。
+</div>
+
+<h2>2. revert：用"反向提交"抵消</h2>
+
+<p><code>git revert &lt;编号&gt;</code> 不是删除历史，而是<strong>新增一个提交</strong>，内容恰好是目标提交的镜像反面（加的变成删的，删的变成加的）。历史像append-only 的账本，错误被公开纠正而不是抹掉——这正是团队协作欢迎它的原因。</p>
+
+<pre><code>git log --oneline        <span class="cmt"># 找到想撤销的提交，如 a1b2c3d</span>
+git revert a1b2c3d       <span class="cmt"># 生成一个"反着来"的新提交</span>
+git push                 <span class="cmt"># 正常推送，不需要任何强推</span></code></pre>
+
+<h2>3. 决策流程图</h2>
+
+<pre><code>想撤销什么？
+├─ 没 add 的文件改动     → git restore 文件
+├─ 已 add 未 commit      → git restore --staged 文件
+├─ 刚 commit 就发现错了   → git commit --amend（没 push 时）
+├─ 撤销本地最近几个提交   → git reset（没 push 时）
+└─ 撤销已 push 的提交     → git revert 编号   ← 唯一安全答案</code></pre>
+
+<div class="quiz" data-quiz='{"title":"小测 1：上周 push 到 GitHub 的一个提交要撤销，安全做法是？","options":["git revert 那个提交编号","git reset --hard 回到它之前","git commit --amend 覆盖掉它","git push --force 覆盖远程"],"answer":0,"explain":"已推送的历史只能追加不能改写。revert 用新提交抵消，对协作者无害。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 2：git reset --hard HEAD~1 会发生什么？","options":["提交和改动内容全部彻底删除","只撤销提交但改动内容全部保留","只清空暂存区但提交仍保留","撤销远程仓库上最近一次提交"],"answer":0,"explain":"hard 模式连工作区文件一起恢复，未保存的改动直接蒸发。用之前先 git status 确认没有别的未保存改动。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 3：git reset --soft HEAD~1 的典型用途是？","options":["提交信息或内容想重新整理再提交","彻底删除项目里某次错误提交","把远程的更新拉取合并到本地","清理工作区里未跟踪的垃圾文件"],"answer":0,"explain":"soft 撤销提交但改动全部留在暂存区，正好用来重新组织成更好的一个提交。"}'></div>
+
+<h2>4. 动手任务（在安全沙盒里练）</h2>
+
+<ol class="tasklist">
+  <li>建沙盒：<code>mkdir ~/git-sandbox && cd ~/git-sandbox && git init</code>。在里面连续做 3 个小提交（改文件→add→commit，重复三次）。</li>
+  <li><code>git log --oneline</code> 记熟历史，然后 <code>git reset HEAD~1</code>——看提交消失但文件内容还在（mixed 的安全性）。</li>
+  <li><code>git commit -m "重新提交"</code> 恢复，再试 <code>git reset --hard HEAD~1</code>——这次 <code>git status</code> 干干净净，改动没了。感受 hard 的威力。</li>
+  <li>救命彩蛋：<code>git reflog</code>——Git 偷偷记录了所有历史动作，找到刚才被 hard reset 掉的编号，<code>git reset --hard &lt;那个编号&gt;</code> 复活它。这是 Git 的后悔药本药。</li>
+  <li>做一次 <code>git revert HEAD</code>，观察历史：旧提交还在，上面多了一个反向提交。</li>
+</ol>
+
+<h2>5. 本课推荐精读</h2>
+
+<p>📖 <a href="https://ohshitgit.com/zh">Oh Shit Git!（中文版）</a>——各种事故的场景化解法，收藏备用。reset 原理见 <a href="https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E9%87%8D%E7%BD%AE">Pro Git 7.1 Reset 揭秘</a>（公认讲得最透的一篇）。</p>
+
+<div class="footer-nav">
+📌 <a href="../reference/undo-cheatsheet.html">撤销速查表</a> · 上一课：<a href="./0006-stash-amend-cherry-pick.html">06 效率三件套</a><br>
+下一课：<a href="./0008-github-repo-setup.html">08 · 把项目打造成像样的开源仓库</a>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

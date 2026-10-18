@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 3 课 · 分支：安全的平行宇宙</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1><span class="lesson-no">03</span> · 分支：安全的平行宇宙</h1>
+<p style="font-family:var(--sans);color:var(--ink-soft);margin-top:-0.5rem;">
+预计用时：40 分钟 · 前置：<a href="./0002-gitignore-undo-commit-message.html">第 2 课</a> · 速查表：<a href="../reference/branching-cheatsheet.html">分支速查表</a>
+</p>
+
+<div class="callout blue">
+<span class="label">本课目标</span>
+理解分支到底是什么（其实便宜得惊人），并跑通 创建 → 开发 → 合并 的完整循环。
+</div>
+
+<h2>1. 分支是什么？</h2>
+
+<p>每个 commit 像一个存档点，串成一条历史链。分支就是一个<strong>可移动的路牌</strong>——一个指向某个 commit 的指针。创建分支不是复制整个项目，只是立一块新牌子，所以瞬间完成、几乎零成本。</p>
+
+<pre><code>          开发中...
+         ↙
+A ── B ── C  ← main（路牌）
+     └── D ── E  ← feature-login（另一块路牌）</code></pre>
+
+<p>为什么要用分支？因为 <code>main</code> 应该永远是"能跑的干净版本"。新功能在分支上做，做砸了直接删分支，main 毫发无损——这就是"安全的平行宇宙"。</p>
+
+<h2>2. 核心命令</h2>
+
+<table>
+  <tr><th>我想…</th><th>命令</th></tr>
+  <tr><td>看所有分支（* 号是我在哪）</td><td><code>git branch</code></td></tr>
+  <tr><td>创建并切换到新分支</td><td><code>git switch -c feature-login</code></td></tr>
+  <tr><td>切回 main</td><td><code>git switch main</code></td></tr>
+  <tr><td>把分支的成果合并进 main</td><td><code>git switch main</code> 然后 <code>git merge feature-login</code></td></tr>
+  <tr><td>删除已合并的分支</td><td><code>git branch -d feature-login</code></td></tr>
+</table>
+
+<div class="callout">
+<span class="label">习惯</span>
+固定套路：<strong>切分支 → 小步提交 → 切回 main → merge → 删分支</strong>。旧教程里的 <code>git checkout</code> 也能干这些活，但新命令 <code>switch</code>（切分支）/ <code>restore</code>（恢复文件）分工更清晰，建议直接用新的。
+</div>
+
+<h2>3. 合并时发生什么</h2>
+
+<ul>
+  <li><strong>快进合并（fast-forward）</strong>：如果 main 在你开发期间没动过，Git 只需把 main 的牌子往前挪——没有新 commit，无脑顺利。</li>
+  <li><strong>三方合并（merge commit）</strong>：如果两边都有新提交，Git 自动生成一个"合并提交"，把两条历史拧成一股。只要两边改的不是同一行，Git 自动搞定。</li>
+  <li>两边改了<strong>同一行</strong>？那就是冲突——下一课专门讲。</li>
+</ul>
+
+<div class="quiz" data-quiz='{"title":"小测 1：git 分支的本质是什么？","options":["一个指向某 commit 的可移动指针","项目文件夹的一份完整副本","GitHub 服务器上的独立仓库","压缩打包后的历史快照文件"],"answer":0,"explain":"分支只是一个指针（加上你当前所在的 HEAD 标记），所以创建和切换都极快。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 2：在 feature 分支上 commit 后，想合并进 main，正确顺序是？","options":["先 merge 分支，再 switch 到分支","先 switch 到 main，再 merge 分支","先 push 分支，再 merge 到远程","先 rebase 分支，再 pull 主库"],"answer":1,"explain":"merge 发生在『你站的那条分支』上。站到 main 上，说『把 feature 合并进来』。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 3：分支上实验失败了，想让 main 不受任何影响，最干净的做法是？","options":["切回 main 然后删除该分支","撤销分支上所有的提交记录","把分支代码逐文件手动还原","在 main 上反向提交一次修复"],"answer":0,"explain":"失败的分支直接删掉即可（未合并用 git branch -D 强删）。main 从头到尾没被碰过。"}'></div>
+
+<h2>4. 动手任务</h2>
+
+<ol class="tasklist">
+  <li><code>git switch -c feature-first</code>，确认提示已切换；<code>git branch</code> 看两个分支。</li>
+  <li>在分支上新建一个文件 <code>notes.md</code>，写点东西，add + commit（用第 2 课的规范格式）。</li>
+  <li><code>git switch main</code>——注意 <code>notes.md</code> 神奇地"消失"了（它只在分支上）。这就是平行宇宙。</li>
+  <li><code>git merge feature-first</code>——文件回来了。运行 <code>git log --oneline</code> 看历史。</li>
+  <li><code>git branch -d feature-first</code> 删掉分支，然后 push。</li>
+  <li>🎮 通关 <a href="https://learngitbranching.js.org/?locale=zh_CN">Learn Git Branching</a> 的"介绍分支"前两关（5 分钟，强烈推荐，可视化建立直觉）。</li>
+</ol>
+
+<h2>5. 本课推荐精读</h2>
+
+<p>📖 <a href="https://git-scm.com/book/zh/v2/Git-%E5%88%86%E6%94%AF-%E5%88%86%E6%94%AF%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B">Pro Git 3.4 分支工作流程</a>——官方教材对分支用法的最精炼总结。图解版见 <a href="https://www.atlassian.com/git/tutorials/using-branches">Atlassian: Using Branches</a>。</p>
+
+<div class="callout purple"><span class="label">有任何不清楚的</span>
+"为什么我的文件消失了？""merge 和 rebase 有什么区别？"——都来问我。</div>
+
+<div class="footer-nav">
+📌 <a href="../reference/branching-cheatsheet.html">分支速查表</a> · 上一课：<a href="./0002-gitignore-undo-commit-message.html">02 日常安全网</a><br>
+下一课：<a href="./0004-merge-conflicts.html">04 · 正面解决合并冲突</a>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

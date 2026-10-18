@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 1 课 · Git 和 GitHub 到底是什么关系？</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1><span class="lesson-no">01</span> · Git 和 GitHub 到底是什么关系？</h1>
+<p style="font-family:var(--sans);color:var(--ink-soft);margin-top:-0.5rem;">
+预计用时：40-50 分钟 · 前置：用过 clone 和 commit · 配套速查表：<a href="../reference/git-zones.html">四个区域速查表</a>
+</p>
+
+<div class="callout blue">
+<span class="label">本课目标</span>
+学完这课，你能说清 Git 是什么、会初始化一个仓库，画出 Git 数据流动的完整地图，并解释：<strong>为什么我 commit 了，GitHub 上却没有？</strong>
+</div>
+
+<h2>1. Git 到底是什么？</h2>
+
+<p>Git 是一个<strong>版本控制系统</strong>：一个装在你电脑上的程序，负责给项目文件夹"存档 + 读档"。</p>
+
+<ul>
+  <li><strong>存档</strong>：每执行一次 <code>git commit</code>，Git 就把整个项目当时的样子拍一张<strong>快照</strong>，连同时间、作者、你写的说明一起存起来。</li>
+  <li><strong>读档</strong>：任何时候都能回到任何一张快照——改坏了、删错了、想看看上周的样子，都是一条命令的事。</li>
+  <li><strong>分布式</strong>：历史不锁在中心服务器上，每个使用者手里都有完整一份。这也是为什么 clone 下来的项目断网也能查历史。</li>
+</ul>
+
+<p>可以把它理解成游戏存档：commit = 手动存档（还要写存档名），<code>git log</code> = 存档列表，后面要学的 reset / revert = 读档。Git 的存档特别省空间——每张快照只额外记录"和上一张相比变了什么"。</p>
+
+<h2>2. 怎么让 Git 接管一个项目：git init</h2>
+
+<p>Git 不会自动盯着你电脑上的任何文件夹。<strong>只有你明确初始化过的文件夹，Git 才会管理。</strong>初始化只有一条命令：</p>
+
+<pre><code>git init</code></pre>
+
+<p>它做的事情只有一件：在这个文件夹里创建一个隐藏的 <code>.git</code> 目录。<strong>这个 <code>.git</code> 目录就是仓库本身</strong>——所有快照历史、分支信息、配置全部装在它里面。把它删掉，你的文件还在，但全部历史消失，文件夹立刻退回"普通文件夹"。</p>
+
+<table>
+  <tr><th>对比</th><th>没初始化</th><th>已初始化（git init 之后）</th></tr>
+  <tr><td>文件夹里</td><td>只有你的文件</td><td>多一个隐藏的 <code>.git</code> 目录（= 仓库）</td></tr>
+  <tr><td><code>git status</code></td><td>报错 <code>fatal: not a git repository</code></td><td>正常显示当前状态</td></tr>
+  <tr><td><code>git commit</code></td><td>不可用</td><td>可用，历史开始累积</td></tr>
+  <tr><td>误删文件</td><td>找不回来</td><td>只要之前 commit 过就能恢复</td></tr>
+</table>
+
+<div class="callout blue">
+<span class="label">你的项目属于哪种？</span>
+你的项目是 <code>git clone</code> 下来的，所以<strong>已经初始化过了</strong>——clone = 自动 init + 把完整历史复制下来。以后自己从零开新仓库（第 8 课会做）才需要手动 <code>git init</code>。
+</div>
+
+<div class="quiz" data-quiz='{"title":"小测 1：一个文件夹是不是 Git 仓库，最可靠的判断依据是？","options":["文件夹里有没有隐藏的 .git 目录","文件夹名字里有没有 git","里面有没有 README.md 文件","VSCode 侧边栏有没有显示源代码管理图标"],"answer":0,"explain":"git init 或 git clone 之后才会出现 .git 目录，它就是仓库本身。其他现象都只是间接线索。"}'></div>
+
+<h2>3. 一个最常见的误解</h2>
+
+<p>很多人以为 Git 就是"把代码存到 GitHub"。错。这是两个完全不同的东西：</p>
+
+<ul>
+  <li><strong>Git</strong>：一个装在你电脑上的<strong>程序</strong>，给你的项目拍"快照"，历史全部存在<strong>本地</strong>。断网也能用。</li>
+  <li><strong>GitHub</strong>：一个<strong>网站</strong>，托管 Git 仓库的副本，用来备份、分享、协作。它只是众多托管网站之一（还有 GitLab、Gitee）。</li>
+</ul>
+
+<p>你之前 <code>git clone</code> 时，其实是把 GitHub 上的完整历史<strong>复制了一份到本地</strong>——之后你的 commit 都发生在自己电脑上，GitHub 一无所知，直到你 <code>push</code>。</p>
+
+<div class="callout">
+<span class="label">一句话</span>
+Git 是相机 + 本地相册，GitHub 是网盘。你先在本地拍照存档，<strong>主动上传</strong>后网盘才有。
+</div>
+
+<h2>4. 核心心智模型：四个区域</h2>
+
+<p>Git 的所有操作，都是在下面四个区域之间搬运文件。这是整个 Git 的地图，后面所有课程都建在这张图上：</p>
+
+<div class="zones">
+  <div class="zone z-work">
+    <span class="zone-title">① 工作区</span>
+    你实际编辑的文件，就是项目文件夹本身
+  </div>
+  <div class="zone-arrow">→<small>git add</small></div>
+  <div class="zone z-stage">
+    <span class="zone-title">② 暂存区</span>
+    "下次要拍快照的改动"清单
+  </div>
+  <div class="zone-arrow">→<small>git commit</small></div>
+  <div class="zone z-local">
+    <span class="zone-title">③ 本地仓库</span>
+    已保存的快照历史，在你电脑上
+  </div>
+  <div class="zone-arrow">→<small>git push</small></div>
+  <div class="zone z-remote">
+    <span class="zone-title">④ 远程仓库</span>
+    GitHub 上的那份副本
+  </div>
+</div>
+<p style="text-align:center;font-family:var(--sans);font-size:.8rem;color:var(--ink-soft);margin-top:-0.6rem;">
+← git pull 把 ④ 的最新版本拉回本地 · git checkout/restore 从 ③ 恢复文件到 ①
+</p>
+
+<p>为什么中间要插一个"暂存区"？因为它让你<strong>挑选</strong>：改了 10 个文件，可以只把其中 3 个打包成一次提交。这是 Git 和"整个文件夹备份"的本质区别——它管理的是<strong>你精心组织的变更</strong>，不是文件本身。</p>
+
+<h2>5. 每个区域对应的命令</h2>
+
+<table>
+  <tr><th>我想…</th><th>命令</th><th>数据移动</th></tr>
+  <tr><td>看看现在什么状态</td><td><code>git status</code></td><td>只看不搬（最常用的命令）</td></tr>
+  <tr><td>把改动列入清单</td><td><code>git add 文件名</code></td><td>① → ②</td></tr>
+  <tr><td>拍一张快照</td><td><code>git commit -m "说明"</code></td><td>② → ③</td></tr>
+  <tr><td>上传到 GitHub</td><td><code>git push</code></td><td>③ → ④</td></tr>
+  <tr><td>拉下最新代码</td><td><code>git pull</code></td><td>④ → ③ + ①</td></tr>
+  <tr><td>看提交历史</td><td><code>git log --oneline</code></td><td>只读 ③</td></tr>
+</table>
+
+<p>注意 <code>git status</code> 的输出：它会直接告诉你哪些文件在哪个区域——橙色 = 工作区改了但没 add，绿色 = 已 add 等待 commit。读 status 是 Git 用户的第一生存技能。</p>
+
+<div class="quiz" data-quiz='{"title":"小测 2：你在 VSCode 里改了 README.md，然后执行了 git add README.md。此刻这个改动在哪个区域？","options":["工作区，因为还没提交","暂存区，等待被提交","本地仓库，已经保存","远程仓库，等待推送"],"answer":1,"explain":"add 把改动从工作区搬进暂存区。commit 之后才进入本地仓库。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 3：你 commit 成功了，但同事在 GitHub 上看不到你的改动，为什么？","options":["因为 commit 只保存到本地仓库","因为 GitHub 每天只同步一次数据","因为 commit 信息必须用英文书写","因为需要先删除旧的远程仓库缓存"],"answer":0,"explain":"commit 只写入本地仓库（③）。必须 git push（③→④）GitHub 才能看到。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 4：git clone 做的事情是什么？","options":["把 GitHub 的完整仓库历史复制到本地","把本地代码快照上传备份到远程网站","把远程仓库的最新版仅拉取到工作区","把暂存区里的改动同步推送到远程"],"answer":0,"explain":"clone = 完整复制（全部历史都拿下来），所以之后断网也能查看历史、提交。"}'></div>
+
+<h2>6. 动手任务</h2>
+
+<div class="callout green">
+<span class="label">环境准备</span>
+在 VSCode 中打开你的项目，按 <code>Ctrl + `</code>（反引号）打开内置终端。后面所有课程都在这个终端里进行。
+</div>
+
+<div class="callout green">
+<span class="label">实验 A：初始化 vs 没初始化（3 分钟）</span>
+先在一个临时文件夹里亲眼看看两者的区别：
+<pre><code>mkdir git-demo <span class="cmt">&amp;&amp;</span> cd git-demo
+<span class="cmt"># 先试试：git status —— 报错 not a git repository（没初始化）</span>
+git init
+<span class="cmt"># 再试：git status —— 正常了，On branch main</span>
+ls -a
+<span class="cmt"># 现在能看到隐藏的 .git 目录了——它就是仓库本身</span></code></pre>
+看完可以删掉：<code>cd .. &amp;&amp; rm -rf git-demo</code>（历史都在 .git 里，删了不留痕迹）。
+</div>
+
+<p style="font-family:var(--sans);font-weight:700;">任务 B：完整闭环（在你的真实项目里做，它是 clone 来的，已初始化）</p>
+
+<ol class="tasklist">
+  <li>运行 <code>git status</code>，读出结果：有橙色文件吗？有绿色文件吗？当前在哪个分支？</li>
+  <li>随便改一个文件里的几个字，再运行 <code>git status</code>——观察它从"看不见"变成橙色（工作区）。</li>
+  <li><code>git add &lt;那个文件&gt;</code>，再 <code>git status</code>——它变绿了（进入暂存区 ②）。</li>
+  <li><code>git commit -m "练习第一次命令行提交"</code>——快照进入本地仓库 ③。</li>
+  <li><code>git log --oneline -5</code>——看到你的新快照在最上面。</li>
+  <li><code>git push</code>——现在去 GitHub 网页上刷新，<strong>亲眼看到</strong>你的提交出现在网上。③→④ 闭环完成。</li>
+</ol>
+
+<div class="callout purple">
+<span class="label">如果 push 报错</span>
+常见原因是认证问题（要求登录 GitHub）。这很正常，把报错信息贴回来问我，我们下次课也可以专门讲认证设置。
+</div>
+
+<h2>5. 本课推荐精读</h2>
+
+<p>📖 <a href="https://git-scm.com/book/zh/v2/Git-%E5%9F%BA%E7%A1%80-Git-%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C">Pro Git（中文版）第 2.2 节：Git 基础 — 撤销操作之前的记录</a>——权威教材对"工作区/暂存区/仓库"三区的正式定义（5 分钟）。GitHub 侧的操作可查 <a href="https://docs.github.com/en/get-started/using-git">GitHub Docs: Using Git</a>。</p>
+
+<div class="callout">
+<span class="label">有任何不清楚的</span>
+直接回来问我——我是你的教练，任何一步卡住都把命令和报错贴给我。
+</div>
+
+<div class="footer-nav">
+📌 配套速查表：<a href="../reference/git-zones.html">Git 四个区域速查表</a>（建议打印）<br>
+下一课预告：02 · 让 Git 听话——.gitignore、撤销改动、写好 commit 信息
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

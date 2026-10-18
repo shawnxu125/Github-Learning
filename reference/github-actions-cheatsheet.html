@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>速查表 · GitHub Actions</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>速查表 · GitHub Actions</h1>
+
+<h2>骨架模板</h2>
+<pre><code>name: 流水线名
+<span class="hl">on:</span> [push]                     <span class="cmt"># 或 push: branches:[main] / tags:["v*"] / workflow_dispatch(手动)</span>
+jobs:
+  job-id:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4      <span class="cmt"># 永远是第一步：取代码</span>
+      - run: 任意 shell 命令            <span class="cmt"># run = 执行命令</span>
+      - uses: 别人写好的动作@版本        <span class="cmt"># uses = 复用 Action</span></code></pre>
+
+<h2>四个概念</h2>
+<table>
+  <tr><th>词</th><th>是什么</th></tr>
+  <tr><td>workflow</td><td><code>.github/workflows/*.yml</code>，一个文件 = 一条流水线</td></tr>
+  <tr><td>trigger (on:)</td><td>触发条件：push / pull_request / tags / 手动 / 定时(cron)</td></tr>
+  <tr><td>job</td><td>一台云端 VM 上跑的大块任务，jobs 之间默认并行</td></tr>
+  <tr><td>step</td><td>VM 里的一条指令：<code>uses</code>（用现成 Action）或 <code>run</code>（shell 命令）</td></tr>
+</table>
+
+<h2>常用 Action</h2>
+<table>
+  <tr><th>Action</th><th>用途</th></tr>
+  <tr><td><code>actions/checkout@v4</code></td><td>clone 仓库代码</td></tr>
+  <tr><td><code>actions/setup-node@v4</code></td><td>装 Node（带 npm 缓存）</td></tr>
+  <tr><td><code>actions/setup-python@v5</code></td><td>装 Python</td></tr>
+  <tr><td><code>actions/upload-pages-artifact</code> + <code>deploy-pages</code></td><td>发布 GitHub Pages</td></tr>
+  <tr><td><code>softprops/action-gh-release@v2</code></td><td>推 tag 时自动发 Release</td></tr>
+</table>
+
+<h2>安全与调试</h2>
+<ul>
+  <li>密钥 → 仓库 <em>Settings → Secrets and variables → Actions</em>，yml 里 <code>${{ secrets.NAME }}</code> 引用，日志自动打码 ***</li>
+  <li>看结果：仓库 → <strong>Actions</strong> 标签 → 点运行记录 → 点 job → 看逐步日志</li>
+  <li>yml 缩进只能用<strong>空格</strong>，Tab 会报错；改完先用 <a href="https://www.yamllint.com/">yamllint</a> 检查</li>
+  <li>找现成动作：<a href="https://github.com/marketplace?type=actions">GitHub Marketplace</a></li>
+</ul>
+
+<div class="footer-nav">来源：<a href="../lessons/0009-ci-cd-github-actions-basics.html">09</a> · <a href="../lessons/0010-actions-deploy.html">10</a> · 官方文档：<a href="https://docs.github.com/zh/actions">docs.github.com/actions</a></div>
+
+</body>
+</html>

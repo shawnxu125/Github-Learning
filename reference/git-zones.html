@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>速查表 · Git 四个区域</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>速查表 · Git 四个区域</h1>
+
+<div class="zones">
+  <div class="zone z-work"><span class="zone-title">① 工作区</span>你正在编辑的文件</div>
+  <div class="zone-arrow">→<small>git add</small></div>
+  <div class="zone z-stage"><span class="zone-title">② 暂存区</span>下次提交的改动清单</div>
+  <div class="zone-arrow">→<small>git commit</small></div>
+  <div class="zone z-local"><span class="zone-title">③ 本地仓库</span>本地保存的全部快照历史</div>
+  <div class="zone-arrow">→<small>git push</small></div>
+  <div class="zone z-remote"><span class="zone-title">④ 远程仓库</span>GitHub 上的副本</div>
+</div>
+
+<h2>命令 → 数据流向</h2>
+<table>
+  <tr><th>命令</th><th>作用</th><th>流向</th></tr>
+  <tr><td><code>git status</code></td><td>查看各区状态（橙色=未add，绿色=已add）</td><td>只读</td></tr>
+  <tr><td><code>git add &lt;file&gt;</code> / <code>git add .</code></td><td>把改动列入提交清单</td><td>①→②</td></tr>
+  <tr><td><code>git commit -m "msg"</code></td><td>把暂存区打成快照存入历史</td><td>②→③</td></tr>
+  <tr><td><code>git push</code></td><td>上传本地新快照到 GitHub</td><td>③→④</td></tr>
+  <tr><td><code>git pull</code></td><td>下载并合并远程新快照</td><td>④→③+①</td></tr>
+  <tr><td><code>git clone &lt;url&gt;</code></td><td>完整复制远程仓库（含全部历史）</td><td>④→③+①</td></tr>
+  <tr><td><code>git log --oneline</code></td><td>紧凑显示提交历史</td><td>读③</td></tr>
+  <tr><td><code>git diff</code></td><td>看工作区还没 add 的改动</td><td>读①vs②</td></tr>
+</table>
+
+<h2>关键概念</h2>
+<table>
+  <tr><th>词</th><th>含义</th></tr>
+  <tr><td>Git</td><td>本地程序，管快照和历史，断网可用</td></tr>
+  <tr><td>GitHub</td><td>托管 Git 仓库的网站（同类：GitLab、Gitee）</td></tr>
+  <tr><td>仓库 repo</td><td>项目文件夹里隐藏的 <code>.git</code> 目录，历史都在里面</td></tr>
+  <tr><td>快照 commit</td><td>某一刻整个项目的存档，有唯一编号</td></tr>
+  <tr><td>remote origin</td><td>你的远程仓库的默认别名</td></tr>
+</table>
+
+<div class="footer-nav">来自第 1 课：<a href="./0001-git-vs-github-four-zones.html">Git 和 GitHub 到底是什么关系？</a></div>
+
+</body>
+</html>

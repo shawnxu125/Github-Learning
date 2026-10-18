@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 10 课 · 实战：自动测试 + 自动部署</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1><span class="lesson-no">10</span> · 实战：自动测试 + 自动部署</h1>
+<p style="font-family:var(--sans);color:var(--ink-soft);margin-top:-0.5rem;">
+预计用时：50 分钟 · 前置：<a href="./0009-ci-cd-github-actions-basics.html">第 9 课</a> · 速查表：<a href="../reference/github-actions-cheatsheet.html">Actions 速查表</a>
+</p>
+
+<div class="callout blue">
+<span class="label">本课目标</span>
+搭一条真正的流水线：<strong>push → 自动构建/测试 → 自动部署上线</strong>。完成后你的项目实现全自动发布。
+</div>
+
+<div class="callout purple">
+<span class="label">开工前告诉我</span>
+你的项目是什么类型？（静态网页 / Node.js / Python / 其他）下面有对应路线，选一条走即可。
+</div>
+
+<h2>1. 路线 A：静态网站 / 文档 → GitHub Pages（最简单，强烈推荐先走通）</h2>
+
+<p>GitHub Pages 免费托管静态站点，且官方提供了现成部署 Action。任何项目（React/Vue 构建产物、纯 HTML、文档站）都适用：</p>
+
+<pre><code>name: 构建并部署到 Pages
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      <span class="cmt"># 如果是纯 HTML 项目，跳过构建，直接发布整个目录：</span>
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .          <span class="cmt"># 有构建产物就写 dist/ 或 build/</span>
+      - uses: actions/deploy-pages@v4</code></pre>
+
+<p>然后在仓库 <em>Settings → Pages</em> 把 Source 设为 <strong>GitHub Actions</strong>。push 后访问 <code>https://你的用户名.github.io/仓库名/</code>——你的代码上线了。</p>
+
+<h2>2. 路线 B：Node.js 项目 → 自动安装依赖 + 测试</h2>
+
+<pre><code>name: CI
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test        <span class="cmt"># 没有测试就先跑 npm run build 验证能构建</span></code></pre>
+
+<h2>3. 路线 C：Python 项目</h2>
+
+<pre><code>name: CI
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: pytest           <span class="cmt"># 或 python 你的主程序.py 做冒烟测试</span></code></pre>
+
+<h2>4. Secrets：密码不要写在 yml 里</h2>
+
+<p>部署要用的密钥（服务器密码、API key、token）放进 GitHub 仓库 <em>Settings → Secrets and variables → Actions → New repository secret</em>，yml 里这样引用，公开仓库也安全：</p>
+
+<pre><code>- name: 部署
+  run: ./deploy.sh
+  env:
+    DEPLOY_TOKEN: <span class="hl">${{ secrets.DEPLOY_TOKEN }}</span></code></pre>
+
+<div class="callout">
+<span class="label">有自己的服务器？</span>
+服务器部署的常见做法：Actions 通过 SSH 登录你的服务器执行 <code>git pull && 重启服务</code>（用 <code>appleboy/ssh-action</code> + SSH secret）。有这个需求告诉我，我给你出定制版任务。
+</div>
+
+<h2>5. 加分项：打 tag 自动发 Release</h2>
+
+<p>回忆第 8 课手动发 Release 的活儿，交给机器人——在任意流水线里加：</p>
+
+<pre><code>on:
+  push:
+    tags: ["v*"]        <span class="cmt"># 只在推 v 开头的 tag 时触发</span>
+
+<span class="cmt"># jobs 里加一步：</span>
+- uses: softprops/action-gh-release@v2   <span class="cmt"># 自动创建 Release</span></code></pre>
+
+<p>从此发布流程 = <code>git tag v1.1.0 && git push origin v1.1.0</code>，两条命令，测试、发布全部自动。</p>
+
+<div class="quiz" data-quiz='{"title":"小测 1：Pages 路线里 actions/checkout 为什么仍是第一步？","options":["虚拟机是空的需先取回代码","Pages 要求代码必须经过它审核","checkout 会顺便完成页面部署","它能把页面转换成静态文件"],"answer":0,"explain":"每台 CI 虚拟机都是全新空机器，所有路线的第一步都是 checkout。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 2：部署 token 应该放在哪里？","options":["仓库 Secrets 里引用","yml 文件明文注释里面","README 文档的末尾处","项目的 .gitignore 文件内"],"answer":0,"explain":"Secrets 加密存储且对公开仓库不可见。写进任何文件（包括 .gitignore 本身）都可能泄露。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 3：on: push: tags: [\"v*\"] 的流水线何时触发？","options":["推送匹配 v 开头的标签时","每次向任意分支推送代码时","合并 Pull Request 到 main 时","手动在网页点击按钮运行时"],"answer":0,"explain":"tag 过滤器只在推送匹配模式的 tag 时触发，v* 匹配 v1.0.0、v2.3 等。"}'></div>
+
+<h2>6. 动手任务</h2>
+
+<ol class="tasklist">
+  <li>按你的项目路线（A/B/C）写好 workflow 文件，push，让 CI 变绿。</li>
+  <li>路线 A：打开你的 <code>username.github.io</code> 页面截图🎉 / 路线 B、C：故意写坏代码让测试变红，再修绿。</li>
+  <li>加一个 secret（随便起名叫 DEMO_SECRET，值写今天的日期），在 step 里 <code>echo</code> 引用它（日志里应显示 *** 而不是明文——这正是它在保护你）。</li>
+  <li>（可选）加上 tag 自动 Release，打 <code>v0.2.0</code> 试试全自动发布。</li>
+</ol>
+
+<h2>7. 本课推荐精读</h2>
+
+<p>📖 <a href="https://docs.github.com/zh/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site">GitHub Docs: Pages 发布源设置</a> + <a href="https://docs.github.com/zh/actions/security-guides/encrypted-secrets">Docs: Encrypted Secrets</a>。Actions 官方市场：<a href="https://github.com/marketplace?type=actions">GitHub Marketplace</a>（找现成 Action 的地方）。</p>
+
+<div class="footer-nav">
+📌 <a href="../reference/github-actions-cheatsheet.html">Actions 速查表</a> · 上一课：<a href="./0009-ci-cd-github-actions-basics.html">09 CI/CD 入门</a><br>
+下一课：<a href="./0011-capstone.html">11 · 毕业项目：完整开源发布流程</a>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

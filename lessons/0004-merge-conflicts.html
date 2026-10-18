@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 4 课 · 正面解决合并冲突</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1><span class="lesson-no">04</span> · 正面解决合并冲突</h1>
+<p style="font-family:var(--sans);color:var(--ink-soft);margin-top:-0.5rem;">
+预计用时：40 分钟 · 前置：<a href="./0003-branches-and-merge.html">第 3 课</a> · 速查表：<a href="../reference/branching-cheatsheet.html">分支速查表</a>
+</p>
+
+<div class="callout blue">
+<span class="label">本课目标</span>
+亲手<strong>故意制造</strong>一次冲突，然后按固定流程解决它。从此看到 CONFLICT 不再心慌——它只是 Git 在问："这一行你想听谁的？"
+</div>
+
+<h2>1. 冲突什么时候发生</h2>
+
+<p>只有一种情况：<strong>两条分支改了同一个文件的同一区域</strong>，然后你 merge。Git 无法替你决定保留谁的版本，于是停下来问你。</p>
+
+<p>冲突不是错误，不需要"修复"仓库。它只是一个待回答的问题。</p>
+
+<h2>2. 冲突长什么样</h2>
+
+<p>merge 冲突后，文件里会出现这样的标记：</p>
+
+<pre><code><span class="hl">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+main 分支上这一行的写法
+<span class="hl">=======</span>
+feature 分支上这一行的写法
+<span class="hl">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature-login</span></code></pre>
+
+<p>读法：<code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> 到 <code>=======</code> 之间是<strong>你现在所在分支</strong>的版本；<code>=======</code> 到 <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> 之间是<strong>被合并分支</strong>的版本。</p>
+
+<h2>3. 解决冲突的标准三步</h2>
+
+<ol class="tasklist">
+  <li><strong>编辑文件</strong>：删掉三行 <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; / ======= / &gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> 标记，留下你想要的最终内容（可以选一边，也可以两段都留，或重写成全新的）。</li>
+  <li><strong><code>git add 该文件</code></strong>——add 在这里的含义是"我裁决完了"。</li>
+  <li><strong><code>git commit</code></strong>（不用 -m 也行，Git 自动写合并信息）——合并完成。</li>
+</ol>
+
+<div class="callout green">
+<span class="label">VSCode 外挂</span>
+VSCode 会在冲突文件里显示 <em>Accept Current / Accept Incoming / Accept Both</em> 按钮，点一下自动清理标记。图形界面和命令行此时完美协作——这正是你保留 VSCode 的理由。
+</div>
+
+<div class="callout">
+<span class="label">逃生门</span>
+冲突太多想整个放弃？<code>git merge --abort</code> 一键回到 merge 之前的状态，毫发无损。任何时候都可以先 abort 再重新来。
+</div>
+
+<div class="quiz" data-quiz='{"title":"小测 1：解决完冲突标记、编辑好文件后，下一步是？","options":["git add 该文件","git restore 该文件","git push 该文件","直接 git merge 一次"],"answer":0,"explain":"add = 告诉 Git 你的裁决结果。所有冲突文件都 add 完，再 commit 收尾。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 2：冲突标记中 ======= 下方（&gt;&gt;&gt;&gt; 上方）的内容是？","options":["当前分支的版本","被合并分支的版本","仓库最近提交的版本","Git 自动生成的融合版本"],"answer":1,"explain":"上方 HEAD 是当前分支，下方是被合并进来的分支的版本。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 3：面对一堆冲突文件，你想彻底放弃这次合并，用？","options":["git merge --abort","git merge --stop","git merge --force","git merge --reset"],"answer":0,"explain":"--abort 把仓库完整恢复到 merge 开始前，随便按都不危险。"}'></div>
+
+<h2>4. 动手任务：故意制造冲突</h2>
+
+<ol class="tasklist">
+  <li>在 main 上把 <code>notes.md</code> 第一行改成 <code>main 的版本</code>，commit。</li>
+  <li><code>git switch -c feature-conflict</code>，把<strong>同一行</strong>改成 <code>feature 的版本</code>，commit。</li>
+  <li><code>git switch main</code>，<code>git merge feature-conflict</code>——恭喜，CONFLICT！🎉</li>
+  <li>用 VSCode 打开文件，观察冲突标记和 Accept 按钮；裁决后 add + commit。</li>
+  <li>再来一遍，但这次在冲突状态下运行 <code>git merge --abort</code>，感受一键逃生。</li>
+  <li>收尾：<code>git branch -D feature-conflict</code>，push。</li>
+</ol>
+
+<h2>5. 本课推荐精读</h2>
+
+<p>📖 <a href="https://git-scm.com/book/zh/v2/Git-%E5%88%86%E6%94%AF-%E5%86%B2%E7%AA%81%E8%A7%A3%E5%86%B3">Pro Git 3.2 冲突解决</a>。GitHub 官方也有 <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/resolving-a-merge-conflict-using-the-command-line">命令行解决冲突</a> 教程。</p>
+
+<div class="footer-nav">
+📌 <a href="../reference/branching-cheatsheet.html">分支速查表</a> · 上一课：<a href="./0003-branches-and-merge.html">03 分支</a><br>
+下一课：<a href="./0005-remotes-and-auth.html">05 · 远程仓库与 GitHub 认证</a>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

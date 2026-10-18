@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>速查表 · 分支与合并</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>速查表 · 分支与合并</h1>
+
+<h2>日常循环</h2>
+<pre><code>git switch -c feature-x   <span class="cmt"># 开分支</span>
+<span class="cmt"># ...小步 add + commit...</span>
+git switch main           <span class="cmt"># 回主线</span>
+git merge feature-x       <span class="cmt"># 合并进来</span>
+git branch -d feature-x   <span class="cmt"># 删除分支</span>
+git push</code></pre>
+
+<h2>命令表</h2>
+<table>
+  <tr><th>命令</th><th>作用</th></tr>
+  <tr><td><code>git branch</code></td><td>列出分支，* = 当前位置</td></tr>
+  <tr><td><code>git switch -c 名字</code></td><td>创建 + 切换</td></tr>
+  <tr><td><code>git switch 名字</code></td><td>切换分支</td></tr>
+  <tr><td><code>git merge 分支</code></td><td>把该分支合并进"当前所在"分支</td></tr>
+  <tr><td><code>git branch -d 名字</code></td><td>删除（已合并才允许）</td></tr>
+  <tr><td><code>git branch -D 名字</code></td><td>强删（未合并的废分支）</td></tr>
+  <tr><td><code>git cherry-pick 编号</code></td><td>只复制那一个提交过来</td></tr>
+</table>
+
+<h2>冲突解决三步</h2>
+<ol class="tasklist">
+  <li>编辑冲突文件：删掉 <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; / ======= / &gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>，留下最终内容（Current=你站的分支，Incoming=被合并的）</li>
+  <li><code>git add 冲突文件</code>（add = 裁决完毕）</li>
+  <li><code>git commit</code> 收尾。想放弃：<code>git merge --abort</code></li>
+</ol>
+
+<div class="callout">
+分支 = 指向 commit 的可移动指针。merge 永远发生在<strong>你站着的那条分支</strong>上。
+</div>
+
+<div class="footer-nav">来源：<a href="../lessons/0003-branches-and-merge.html">03</a> · <a href="../lessons/0004-merge-conflicts.html">04</a> · 练习：<a href="https://learngitbranching.js.org/?locale=zh_CN">Learn Git Branching</a></div>
+
+</body>
+</html>

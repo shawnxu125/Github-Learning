@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 6 课 · 效率三件套：stash / amend / cherry-pick</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1><span class="lesson-no">06</span> · 效率三件套：stash / amend / cherry-pick</h1>
+<p style="font-family:var(--sans);color:var(--ink-soft);margin-top:-0.5rem;">
+预计用时：40 分钟 · 前置：<a href="./0003-branches-and-merge.html">第 3 课</a> · 速查表：<a href="../reference/undo-cheatsheet.html">撤销速查表</a>
+</p>
+
+<div class="callout blue">
+<span class="label">本课目标</span>
+掌握三个高频场景的优雅解法：中途被打断要切分支、刚提交就后悔、只想要别人那一个提交。
+</div>
+
+<h2>1. stash：临时挂起墙</h2>
+
+<p>场景：你在 feature 分支写了一半（还没 commit），突然要切到 main 改个急事。未提交的改动会跟着你跳来跳去，很烦。<code>git stash</code> 把当前所有未提交改动<strong>收进一个抽屉</strong>，工作区瞬间干净，切完分支回来再 <code>git stash pop</code> 取回：</p>
+
+<pre><code>git stash          <span class="cmt"># 改动收进抽屉，工作区变干净</span>
+git switch main    <span class="cmt"># 干净地切走办事</span>
+<span class="cmt"># ...办完事...</span>
+git switch feature-x
+git stash pop      <span class="cmt"># 改动取回，抽屉清空</span>
+
+git stash list     <span class="cmt"># 抽屉里存了几层（可以存多次）</span></code></pre>
+
+<h2>2. amend：修改刚拍的照片</h2>
+
+<p>第 2 课学过：<code>git commit --amend</code> 重写<strong>最新一次</strong>提交。补充一个组合技——漏了文件时：</p>
+
+<pre><code>git add 漏掉的文件
+git commit --amend --no-edit   <span class="cmt"># 把文件补进上一次提交，信息不变</span></code></pre>
+
+<div class="callout">
+<span class="label">红线</span>
+amend 本质是"毁掉旧提交、造一个新提交"。只准用于<strong>没 push 过</strong>的提交。已 push 的改写会让协作者的历史错乱（单人项目偶尔违规后果也自负，养成习惯最重要）。
+</div>
+
+<h2>3. cherry-pick：只摘那一颗樱桃</h2>
+
+<p>merge 是"把整条分支倒进来"，cherry-pick 是"只要<strong>那一个</strong>提交"。场景：main 上有个 bug 修复提交，你想把它也放到 release 分支上，但不想合并 main 的其他半成品：</p>
+
+<pre><code>git log --oneline        <span class="cmt"># 找到那个提交的编号，如 a1b2c3d</span>
+git switch release
+git cherry-pick a1b2c3d  <span class="cmt"># 复制那个提交的改动，在当前分支生成新提交</span></code></pre>
+
+<p>cherry-pick 遇到冲突的处理方式和 merge 完全一样：改文件 → add → <code>git cherry-pick --continue</code>。</p>
+
+<div class="quiz" data-quiz='{"title":"小测 1：写了一半代码要紧急切分支，未提交的改动怎么处理最优雅？","options":["git stash 收好再切分支","git commit 一个半成品再切","git restore 丢弃掉再切分支","复制文件夹到桌面再切分支"],"answer":0,"explain":"stash 就是为这个场景设计的：临时保管、随时取回、不留垃圾提交。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 2：cherry-pick 和 merge 的区别是？","options":["前者只复制指定的单个提交","前者合并速度比后者快得多","前者完全不会引发冲突","后者只能用于远程分支的操作"],"answer":0,"explain":"merge 合并整条分支的历史，cherry-pick 精确点单某一个提交。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 3：commit 后漏 add 了一个文件（还没 push），最佳补救是？","options":["add 后 commit --amend --no-edit","再提交一个新 commit 补救也行","git reset --hard 后全部重做一遍","只能保持现状留着缺陷到下次"],"answer":0,"explain":"amend 把遗漏文件并入原提交，历史保持干净。未 push 时放心用。"}'></div>
+
+<h2>4. 动手任务</h2>
+
+<ol class="tasklist">
+  <li><strong>stash 演练</strong>：改一个文件不 commit → <code>git stash</code> → 确认 <code>git status</code> 干净 → <code>git stash pop</code> 取回。</li>
+  <li><strong>amend 演练</strong>：提交时故意漏掉一个文件，用 add + <code>commit --amend --no-edit</code> 补救，用 <code>git log --stat -1</code> 确认文件已并入。</li>
+  <li><strong>cherry-pick 演练</strong>：建分支 <code>feature-pick</code>，做一次小提交；切回 main，<code>git cherry-pick &lt;编号&gt;</code> 把它摘过来（如果内容相同可能提示空提交，属正常，说明机制生效了）。</li>
+  <li>收尾 push。</li>
+</ol>
+
+<h2>5. 本课推荐精读</h2>
+
+<p>📖 <a href="https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E9%87%8D%E5%86%99%E5%8E%86%E5%8F%B2">Pro Git 7.7 重写历史</a>（amend 的正式解释）+ <a href="https://git-scm.com/docs/git-stash">git-stash 官方手册</a>。Atlassian 的 <a href="https://www.atlassian.com/git/tutorials/cherry-pick">cherry-pick 教程</a> 图解很好。</p>
+
+<div class="footer-nav">
+📌 <a href="../reference/undo-cheatsheet.html">撤销速查表</a> · 上一课：<a href="./0005-remotes-and-auth.html">05 远程与认证</a><br>
+下一课：<a href="./0007-undo-emergency.html">07 · 撤销事故：reset vs revert</a>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

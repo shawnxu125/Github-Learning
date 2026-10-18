@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 8 课 · 把项目打造成像样的开源仓库</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1><span class="lesson-no">08</span> · 把项目打造成像样的开源仓库</h1>
+<p style="font-family:var(--sans);color:var(--ink-soft);margin-top:-0.5rem;">
+预计用时：40 分钟 · 前置：<a href="./0005-remotes-and-auth.html">第 5 课</a>
+</p>
+
+<div class="callout blue">
+<span class="label">本课目标</span>
+让仓库从"代码堆"变成"门面"：README、LICENSE、版本标签（tag）与 Release——这也是 CI/CD 的第一块地基。
+</div>
+
+<h2>1. 开源仓库三件套</h2>
+
+<table>
+  <tr><th>文件</th><th>作用</th><th>怎么建</th></tr>
+  <tr><td><code>README.md</code></td><td>项目门面：是什么、为什么、怎么装、怎么用</td><td>自己写，GitHub 自动显示在首页</td></tr>
+  <tr><td><code>LICENSE</code></td><td>授权协议，决定别人能不能/怎么用你的代码</td><td>GitHub 建仓时勾选，或 <a href="https://choosealicense.com/">choosealicense.com</a> 三问选择</td></tr>
+  <tr><td><code>.gitignore</code></td><td>忽略规则（第 2 课已做）</td><td>✅</td></tr>
+</table>
+
+<p>LICENSE 不知道选什么：想"随便用别找我麻烦"选 <strong>MIT</strong>，想"别人用了必须开源"选 <strong>GPL</strong>。个人项目 MIT 最常见。</p>
+
+<h2>2. tag：给历史钉上里程碑</h2>
+
+<p>commit 编号（<code>a1b2c3d</code>）没法向用户交代"哪个版本稳定"。<strong>tag</strong> 就是给某个 commit 钉一块永久名牌，惯例用版本号：</p>
+
+<pre><code>git tag -a v1.0.0 -m "第一个正式发布版本"   <span class="cmt"># 给当前提交打标签</span>
+git push origin v1.0.0                     <span class="cmt"># tag 不会随 push 自动上传，要单独推！</span>
+git tag                                        <span class="cmt"># 查看所有 tag</span></code></pre>
+
+<div class="callout">
+<span class="label">易错点</span>
+<code>git push</code> 默认<strong>不带 tag</strong>。忘了 <code>push origin v1.0.0</code> 是新手最常见的"我明明打了标签 GitHub 上怎么没有"。
+</div>
+
+<h2>3. GitHub Release：面向人类的发布页</h2>
+
+<p>tag 是 Git 层的标记，Release 是 GitHub 网页层的"发布会"：基于 tag 生成，可以写更新日志、挂安装包。路径：仓库页 → <em>Releases</em> → <em>Draft a new release</em> → 选你的 tag → 写说明 → Publish。</p>
+
+<p>记住分工：<strong>tag 在 Git 里打，Release 在网页上发布</strong>。以后第 10 课我们会让 GitHub Actions 自动做这件事。</p>
+
+<div class="quiz" data-quiz='{"title":"小测 1：git tag 和 git branch 的共同点是？","options":["本质上都是指向提交的指针","都会随着 git push 自动上传","都能随时移动位置且无副作用","都可以被 merge 命令进行合并"],"answer":0,"explain":"都是指针。区别：分支会跟着新提交移动，tag 钉死后不动（且默认不自动 push）。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 2：打完 tag 但 GitHub 上看不到，为什么？","options":["push 默认不会把 tag 上传","tag 只能由网页端创建成功","tag 需要等 GitHub 审核同步","本地 tag 必须先转 Release"],"answer":0,"explain":"需要 git push origin v1.0.0（或 git push --tags）。这是最经典的 tag 坑。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 3：希望开源代码\"别人用了也必须开源\"，应选哪个协议？","options":["GPL 协议","MIT 协议","Apache 协议","BSD 协议"],"answer":0,"explain":"GPL 有\"传染性\"：衍生作品必须同样开源。MIT/BSD/Apache 都允许闭源商用。"}'></div>
+
+<h2>4. 动手任务</h2>
+
+<ol class="tasklist">
+  <li>给你的项目补齐 README.md：项目名、一句话简介、如何运行。写得烂没关系，先有。</li>
+  <li>没有 LICENSE 就加一个（推荐 MIT）。</li>
+  <li>打第一个版本标签：<code>git tag -a v0.1.0 -m "首个里程碑"</code>，然后 <code>git push origin v0.1.0</code>。</li>
+  <li>去 GitHub 网页基于 v0.1.0 发布第一个 Release。</li>
+  <li>截图或记住这个页面——第 10 课结束时，它将由 GitHub Actions <strong>自动发布</strong>。</li>
+</ol>
+
+<h2>5. 本课推荐精读</h2>
+
+<p>📖 <a href="https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases">GitHub Docs: About Releases</a> + <a href="https://choosealicense.com/">Choose an License</a>（三分钟选对协议）。tag 原理见 <a href="https://git-scm.com/book/zh/v2/Git-%E5%9F%BA%E7%A1%80-%E6%89%93%E6%A0%87%E7%AD%BE">Pro Git 2.6 打标签</a>。</p>
+
+<div class="footer-nav">
+上一课：<a href="./0007-undo-emergency.html">07 撤销事故</a><br>
+下一课：<a href="./0009-ci-cd-github-actions-basics.html">09 · CI/CD 概念与第一个 GitHub Actions</a>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 2 课 · 日常安全网：.gitignore、撤销、提交信息</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1><span class="lesson-no">02</span> · 日常安全网：.gitignore、撤销、提交信息</h1>
+<p style="font-family:var(--sans);color:var(--ink-soft);margin-top:-0.5rem;">
+预计用时：40 分钟 · 前置：<a href="./0001-git-vs-github-four-zones.html">第 1 课</a> · 速查表：<a href="../reference/undo-cheatsheet.html">撤销速查表</a>
+</p>
+
+<div class="callout blue">
+<span class="label">本课目标</span>
+学会三件每天都会用到的事：让 Git 忽略不该管的文件、安全地撤销各级操作、写出半年后还能看懂的提交信息。
+</div>
+
+<h2>1. .gitignore：告诉 Git "别管这些文件"</h2>
+
+<p>项目里总有一堆不该进版本库的东西：依赖目录（<code>node_modules/</code>）、编译产物、密钥文件、系统垃圾（<code>.DS_Store</code>）。把它们提交进去会污染历史，甚至泄露密码。</p>
+
+<p>在项目根目录建一个 <code>.gitignore</code> 文本文件，每行一条规则：</p>
+
+<pre><code><span class="cmt"># 依赖和构建产物</span>
+node_modules/
+dist/
+*.log
+
+<span class="cmt"># 密钥 —— 永远不要提交！</span>
+.env
+secrets.json</code></pre>
+
+<div class="callout">
+<span class="label">注意</span>
+<code>.gitignore</code> 只对<strong>还没被跟踪</strong>的文件生效。如果某个文件已经提交过，要用 <code>git rm --cached 文件名</code> 让 Git 停止跟踪它（文件本身保留在磁盘上）。
+</div>
+
+<p>懒人福利：<a href="https://www.toptal.com/developers/gitignore">gitignore.io</a> 输入你的语言/框架，自动生成完整的 .gitignore。</p>
+
+<h2>2. 撤销三连：改乱了怎么办</h2>
+
+<p>撤销的位置取决于改动走到了哪个区域（回忆第 1 课的四个区域）：</p>
+
+<table>
+  <tr><th>情况</th><th>命令</th><th>效果</th></tr>
+  <tr><td>工作区改乱了，想恢复成上次提交的样子</td><td><code>git restore 文件名</code></td><td>丢弃 ① 的改动（<strong>不可找回</strong>）</td></tr>
+  <tr><td>已经 add 了，但不想提交这个文件</td><td><code>git restore --staged 文件名</code></td><td>从 ② 退回 ①，改动还在</td></tr>
+  <tr><td>刚 commit 就发现漏了文件 / 信息写错</td><td><code>git commit --amend</code></td><td>修改<strong>最新一次</strong>提交</td></tr>
+</table>
+
+<div class="callout green">
+<span class="label">安全边界</span>
+<code>--amend</code>（以及后面会学的 reset）只用于<strong>还没 push 到 GitHub</strong> 的提交。已经 push 出去的提交不要改写，这是 Git 社交礼仪的第一条。
+</div>
+
+<h2>3. 写好 commit 信息</h2>
+
+<p>commit 信息是给半年后的你（和未来的合作者）看的。推荐开源社区通用的轻量格式：</p>
+
+<pre><code><span class="hl">feat:</span> 添加用户登录页面
+<span class="hl">fix:</span> 修复计算器除零崩溃
+<span class="hl">docs:</span> 补充安装说明
+<span class="hl">style:</span> 调整首页配色</code></pre>
+
+<p>规则很简单：<code>类型: 一句话说清做了什么</code>。常用类型只有 4 个：<code>feat</code>（新功能）、<code>fix</code>（修 bug）、<code>docs</code>（文档）、<code>style/refactor/chore</code>（其他杂项）。第一行不超过 50 个字，用动词开头。</p>
+
+<div class="quiz" data-quiz='{"title":"小测 1：你 git add 了一个文件，但发现不该提交它（还没 commit）。用哪个命令？","options":["git restore 文件名","git restore --staged 文件名","git commit --amend 文件名","git rm --cached 文件名"],"answer":1,"explain":"--staged 把文件从暂存区退回工作区，你的改动仍然保留。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 2：node_modules/ 已经误提交过一次了，想让它被忽略，正确做法是？","options":["直接写进 .gitignore 就自动生效了","git rm --cached 后再写入 .gitignore","删除本地仓库然后重新 clone 一次","在 GitHub 网页设置里屏蔽该目录"],"answer":1,"explain":".gitignore 只管未跟踪文件。已跟踪的先 git rm --cached 停止跟踪，再写进 .gitignore。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 3：哪个 commit 信息写得最好？","options":["update","改了一些东西","fix: 修复登录后跳转空白页的问题","WIP WIP WIP 求求了快上线吧"],"answer":2,"explain":"fix + 具体做了什么。『update』和『改了一些东西』半年后等于没写。"}'></div>
+
+<h2>4. 动手任务</h2>
+
+<ol class="tasklist">
+  <li>检查你的项目：有没有 <code>.gitignore</code>？没有就建一个（用 gitignore.io 生成），至少包含日志、依赖目录、<code>.env</code>。</li>
+  <li>制造一次撤销：随便改一个已跟踪文件 20 行，<code>git status</code> 确认它是橙色，然后 <code>git restore 该文件</code>——看改动瞬间消失。</li>
+  <li>再改一次，<code>git add</code> 它，然后 <code>git restore --staged</code> 它——观察 status 里从绿变橙，但改动还在。</li>
+  <li>用规范格式做一次真实提交：<code>git commit -m "docs: 添加 .gitignore 忽略规则"</code>，然后 push。</li>
+  <li>故意把某次 commit 信息写错，用 <code>git commit --amend -m "正确的信息"</code> 修正（趁还没 push）。</li>
+</ol>
+
+<h2>5. 本课推荐精读</h2>
+
+<p>📖 <a href="https://git-scm.com/book/zh/v2/Git-%E5%9F%BA%E7%A1%80-%E8%AE%B0%E5%BD%95%E6%AF%8F%E6%AC%A1%E6%8F%90%E4%BA%A4%E5%88%B0%E4%BB%93%E5%BA%93">Pro Git 2.2 提交到仓库</a>（含 .gitignore 正式说明）。提交信息规范可参考 <a href="https://www.conventionalcommits.org/zh-hans/v1.0.0/">Conventional Commits 中文</a>（第 9 课 CI 会自动利用这个格式）。</p>
+
+<div class="callout purple">
+<span class="label">有任何不清楚的</span>
+把 <code>git status</code> 或报错贴给我，我帮你读。
+</div>
+
+<div class="footer-nav">
+📌 <a href="../reference/undo-cheatsheet.html">撤销速查表</a> · 上一课：<a href="./0001-git-vs-github-four-zones.html">01 四个区域</a><br>
+下一课：<a href="./0003-branches-and-merge.html">03 · 分支：安全的平行宇宙</a>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

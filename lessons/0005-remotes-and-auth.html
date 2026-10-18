@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 5 课 · 远程仓库与 GitHub 认证</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1><span class="lesson-no">05</span> · 远程仓库与 GitHub 认证</h1>
+<p style="font-family:var(--sans);color:var(--ink-soft);margin-top:-0.5rem;">
+预计用时：40 分钟 · 前置：<a href="./0001-git-vs-github-four-zones.html">第 1 课</a>
+</p>
+
+<div class="callout blue">
+<span class="label">本课目标</span>
+搞懂 origin 是什么、push/pull 到底在跟谁说话，并一劳永逸解决"每次 push 都要登录"的认证问题（配 SSH 密钥）。
+</div>
+
+<h2>1. origin：给远程仓库起的小名</h2>
+
+<p>Git 不会记住"GitHub 上那个网址"，它把网址登记为一个别名，默认叫 <code>origin</code>。所以 <code>git push origin main</code> 的完整含义是："把 main 分支的提交，推送到别名为 origin 的那个网址"。</p>
+
+<pre><code>git remote -v          <span class="cmt"># 查看别名 → 网址的对照表</span>
+<span class="cmt"># origin  https://github.com/你/项目.git (fetch)</span>
+<span class="cmt"># origin  https://github.com/你/项目.git (push)</span></code></pre>
+
+<p>clone 过的仓库会自动登记好 origin。如果某个本地文件夹是 <code>git init</code> 新建的，需要手动关联：</p>
+
+<pre><code>git remote add origin https://github.com/你的用户名/仓库名.git</code></pre>
+
+<h2>2. push -u 是干嘛的</h2>
+
+<p>第一次推送用 <code>git push -u origin main</code>。<code>-u</code>（upstream）建立"本地 main ↔ origin/main"的绑定，之后只需敲 <code>git push</code> / <code>git pull</code>，Git 知道该去哪。</p>
+
+<h2>3. 认证：SSH 密钥，配一次管所有项目</h2>
+
+<p>用 HTTPS 地址的仓库 push 时要求验证身份。GitHub 已不支持账号密码，要么用 Personal Access Token（会过期），要么——推荐——<strong>SSH 密钥</strong>：你电脑上生成一对钥匙，公钥交给 GitHub，之后 push 永远免密。</p>
+
+<pre><code><span class="cmt"># 1. 生成密钥（一路回车，密码留空即可）</span>
+ssh-keygen -t ed25519 -C "你的邮箱@example.com"
+
+<span class="cmt"># 2. 复制公钥内容</span>
+cat ~/.ssh/id_ed25519.pub
+
+<span class="cmt"># 3. 粘贴到 GitHub → Settings → SSH and GPG keys → New SSH key</span>
+
+<span class="cmt"># 4. 把仓库地址换成 SSH 形式</span>
+git remote set-url origin git@github.com:你的用户名/仓库名.git
+
+<span class="cmt"># 5. 测试</span>
+ssh -T git@github.com   <span class="cmt"># 看到 "Hi! You've successfully authenticated" 即成功</span></code></pre>
+
+<div class="callout">
+<span class="label">两种地址</span>
+HTTPS 形如 <code>https://github.com/用户/仓库.git</code>，SSH 形如 <code>git@github.com:用户/仓库.git</code>。同一个仓库两种地址都有效，认证方式不同。
+</div>
+
+<div class="quiz" data-quiz='{"title":"小测 1：git push origin main 里的 origin 是什么？","options":["远程仓库网址的本地别名","GitHub 官方的服务器集群代号","主分支的另一个名字而已","本地缓存的远程仓库快照文件"],"answer":0,"explain":"origin 只是别名，git remote -v 能看到它实际指向的网址。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 2：为什么推荐 SSH 而不是 HTTPS 认证？","options":["配置一次永久免密不用输","HTTPS 传输的代码不够安全","SSH 推送代码的速度更快些","HTTPS 已经彻底关闭不能用了"],"answer":0,"explain":"HTTPS 需要 Token 且会过期；SSH 密钥配一次后所有仓库永久免密。功能上两者等价。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 3：git init 新建的本地仓库要关联 GitHub，用哪条命令？","options":["git remote add origin 网址","git remote set-url origin 网址","git push -u origin main 网址","git clone 网址 到当前目录"],"answer":0,"explain":"add 是首次登记；set-url 是改已存在的别名；clone 是从头复制，场景不同。"}'></div>
+
+<h2>4. 动手任务</h2>
+
+<ol class="tasklist">
+  <li><code>git remote -v</code>——看看你的项目 origin 是 HTTPS 还是 SSH 地址。</li>
+  <li>如果是 HTTPS 且 push 时总要认证：按上面第 3 节配好 SSH 密钥，<code>ssh -T git@github.com</code> 验证成功。</li>
+  <li>如果还没有 GitHub 仓库：去 github.com/new 建一个（名字随意，Public），然后 <code>git remote add origin ...</code> + <code>git push -u origin main</code>。</li>
+  <li>验证绑定：之后 push 不再需要任何 <code>origin main</code> 参数和登录操作，<code>git push</code> 两个单词搞定。</li>
+</ol>
+
+<h2>5. 本课推荐精读</h2>
+
+<p>📖 <a href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent">GitHub Docs: 生成 SSH 密钥</a>（官方步骤，含各系统差异）。origin/upstream 概念见 <a href="https://git-scm.com/book/zh/v2/Git-%E5%9F%BA%E7%A1%80-%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93%E7%9A%84%E7%AE%A1%E7%90%86">Pro Git 2.5 远程仓库管理</a>。</p>
+
+<div class="footer-nav">
+上一课：<a href="./0004-merge-conflicts.html">04 合并冲突</a><br>
+下一课：<a href="./0006-stash-amend-cherry-pick.html">06 · 效率三件套：stash / amend / cherry-pick</a>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

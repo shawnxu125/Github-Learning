@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git 学习工作区 · 课程导航</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+/* ============ 首页专属样式 ============ */
+:root {
+  --bg: #fffdf8;
+  --ink: #1a1a1a;
+  --ink-soft: #6b6558;
+  --accent: #c2410c;
+  --green: #15803d;
+  --blue: #1d4ed8;
+  --purple: #7c3aed;
+  --border: #e6e0d4;
+  --term-bg: #22242b;
+  --term-ink: #e8e6e3;
+  --term-dim: #7f8797;
+  --term-hl: #ffd479;
+  --mono: "JetBrains Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+  --serif: Georgia, "Noto Serif SC", "Songti SC", serif;
+  --sans: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+html { scroll-behavior: smooth; }
+body.home {
+  max-width: 1040px;
+  padding: 0 1.5rem 5rem;
+}
+
+/* ---------- 顶栏 ---------- */
+.topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.1rem 0; margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono); font-size: .8rem; color: var(--ink-soft);
+}
+.topbar a { color: var(--ink-soft); text-decoration: none; margin-left: 1.4rem; white-space: nowrap; }
+.topbar a:hover { color: var(--accent); }
+.topbar .repo { color: var(--ink); font-weight: 700; }
+.topbar .repo::before { content: "⎇ "; color: var(--accent); }
+
+/* ---------- Hero ---------- */
+.hero {
+  display: grid; grid-template-columns: 1fr 1.05fr;
+  gap: 3rem; align-items: center; margin-bottom: 4.5rem;
+}
+.hero h1 {
+  font-family: var(--mono);
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 800; line-height: 1.25;
+  border: none; padding: 0; margin: 0 0 1.2rem;
+  letter-spacing: -.02em;
+}
+.hero h1 .cursor {
+  display: inline-block; width: .55em; height: 1em;
+  background: var(--accent); vertical-align: -.12em;
+  animation: blink 1.1s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+.hero .lede {
+  font-size: 1.05rem; color: var(--ink-soft); max-width: 34em; margin-bottom: 1.6rem;
+}
+.hero .lede strong { color: var(--ink); }
+.hero-links { display: flex; gap: .8rem; flex-wrap: wrap; font-family: var(--mono); font-size: .82rem; }
+.hero-links a {
+  text-decoration: none; padding: .45rem .9rem; border-radius: 6px;
+  border: 1.5px solid var(--border); color: var(--ink); background: #fff;
+}
+.hero-links a.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+.hero-links a:hover { border-color: var(--accent); color: var(--accent); }
+.hero-links a.primary:hover { color: #fff; background: var(--accent); border-color: var(--accent); }
+
+/* ---------- 终端 ---------- */
+.terminal {
+  background: var(--term-bg); color: var(--term-ink);
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 18px 40px -18px rgba(26, 26, 26, .45);
+  font-family: var(--mono); font-size: .78rem; line-height: 1.85;
+}
+.term-bar {
+  display: flex; align-items: center; gap: .45rem;
+  padding: .6rem .9rem; background: #2b2e37;
+  color: var(--term-dim); font-size: .7rem;
+}
+.term-bar i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+.term-bar i:nth-child(1) { background: #ff5f57; }
+.term-bar i:nth-child(2) { background: #febc2e; }
+.term-bar i:nth-child(3) { background: #28c840; }
+.term-bar span { margin-left: .5rem; }
+.term-body { padding: 1rem 1.2rem 1.2rem; overflow-x: auto; }
+.term-body pre { background: none; color: inherit; padding: 0; margin: 0; font-size: inherit; line-height: inherit; white-space: pre; }
+.t-prompt { color: #28c840; }
+.t-cmd { color: #fff; font-weight: 700; }
+.t-dim { color: var(--term-dim); }
+.t-graph { color: #4b5263; }
+.t-hash { color: var(--term-hl); }
+.t-mod1 { color: #ff9d6e; } .t-mod2 { color: #6ee7a0; }
+.t-mod3 { color: #c4a5ff; } .t-mod4 { color: #7eb3ff; }
+.t-tag { color: #28c840; }
+.tline { opacity: 0; animation: tshow .25s ease forwards; }
+@keyframes tshow { to { opacity: 1; } }
+.term-body .tline:nth-child(1) { animation-delay: .15s; }
+.term-body .tline:nth-child(2) { animation-delay: .45s; }
+.term-body .tline:nth-child(3) { animation-delay: .75s; }
+.term-body .tline:nth-child(n+4):nth-child(-n+15) { animation-delay: 1s; }
+.term-body .tline:nth-child(n+16) { animation-delay: 1.5s; }
+
+/* ---------- 区块标题 ---------- */
+.section-head {
+  display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+  margin: 0 0 1.6rem; padding-bottom: .5rem;
+  border-bottom: 3px solid var(--accent);
+}
+.section-head h2 {
+  font-family: var(--mono); font-size: 1.35rem; font-weight: 800;
+  margin: 0; padding: 0; color: var(--ink);
+}
+.section-head h2::before { content: "$ "; color: var(--accent); }
+.section-head .sub { font-family: var(--mono); font-size: .78rem; color: var(--ink-soft); }
+.chip {
+  margin-left: auto; font-family: var(--mono); font-size: .78rem;
+  background: var(--ink); color: #fff; padding: .25rem .7rem; border-radius: 999px;
+}
+.chip b { color: var(--term-hl); }
+
+/* ---------- 提交图导航 ---------- */
+.track { list-style: none; margin: 0 0 4.5rem; padding: 0; position: relative; }
+.track::before {
+  content: ""; position: absolute; left: 10px; top: 12px; bottom: 26px;
+  width: 2px; background: var(--border);
+}
+.track > li { position: relative; }
+
+li.module {
+  display: flex; align-items: center; gap: .9rem;
+  margin: 2.4rem 0 .5rem;
+}
+li.module:first-child { margin-top: 0; }
+.mod-node {
+  flex: none; width: 15px; height: 15px; margin-left: 3.5px;
+  background: var(--mod, var(--accent)); transform: rotate(45deg); border-radius: 3px;
+  box-shadow: 0 0 0 4px var(--bg);
+}
+li.module h3 {
+  margin: 0; font-family: var(--sans); font-size: 1.05rem; font-weight: 800;
+  color: var(--mod, var(--accent));
+}
+li.module .mod-sub { font-family: var(--serif); font-weight: 400; color: var(--ink-soft); font-size: .88rem; margin-left: .6rem; }
+
+li.lesson {
+  display: grid; grid-template-columns: 24px 1fr auto; align-items: center;
+  gap: 0 1rem; padding: .55rem 0;
+}
+li.lesson .node {
+  width: 13px; height: 13px; border-radius: 50%;
+  border: 3px solid var(--mod, var(--accent)); background: var(--bg);
+  margin-left: 4px; transition: background .2s, box-shadow .2s;
+}
+li.lesson:hover .node { box-shadow: 0 0 0 4px color-mix(in srgb, var(--mod, var(--accent)) 18%, transparent); }
+li.lesson.done .node { background: var(--mod, var(--accent)); }
+.lesson-body a {
+  font-family: var(--sans); font-weight: 700; font-size: 1.02rem;
+  color: var(--ink); text-decoration: none;
+}
+.lesson-body a:hover { color: var(--accent); }
+.lesson-body a .lid {
+  font-family: var(--mono); font-size: .8em; font-weight: 700;
+  color: var(--mod, var(--accent)); margin-right: .55rem;
+}
+.lesson-body .outcome {
+  margin: .1rem 0 0; font-size: .86rem; color: var(--ink-soft);
+}
+li.lesson.done .lesson-body a { color: var(--ink-soft); }
+.done-mark {
+  font-family: var(--mono); font-size: .72rem; color: var(--green);
+  margin-left: .6rem; display: none;
+}
+li.lesson.done .done-mark { display: inline; }
+.commit-box {
+  font-family: var(--mono); font-size: .74rem; color: var(--ink-soft);
+  display: flex; align-items: center; gap: .4rem; cursor: pointer;
+  padding: .3rem .6rem; border: 1px dashed var(--border); border-radius: 6px;
+  user-select: none; white-space: nowrap;
+}
+.commit-box:hover { border-color: var(--green); color: var(--green); }
+.commit-box input { accent-color: var(--green); cursor: pointer; }
+li.lesson.done .commit-box { border-style: solid; border-color: var(--green); color: var(--green); }
+
+/* ---------- 速查表（ls 树） ---------- */
+.tree {
+  font-family: var(--mono); font-size: .86rem; line-height: 2;
+  background: #fff; border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 1.2rem 1.5rem; margin-bottom: 4.5rem;
+}
+.tree .tree-root { color: var(--accent); font-weight: 700; }
+.tree a { color: var(--ink); text-decoration: none; }
+.tree a:hover { color: var(--accent); text-decoration: underline; }
+.tree .t-branch { color: #b5ad9d; }
+.tree .t-desc { color: var(--ink-soft); font-family: var(--serif); font-size: .84rem; margin-left: 1rem; }
+
+/* ---------- 资源 ---------- */
+.resources { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 4.5rem; }
+.resources a {
+  display: block; text-decoration: none; background: #fff;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: .9rem 1.1rem; color: var(--ink);
+}
+.resources a:hover { border-color: var(--accent); }
+.resources .r-kind { font-family: var(--mono); font-size: .68rem; color: var(--accent); display: block; margin-bottom: .2rem; }
+.resources .r-name { font-family: var(--sans); font-weight: 700; font-size: .92rem; }
+.resources .r-use { font-size: .8rem; color: var(--ink-soft); margin-top: .2rem; display: block; }
+
+/* ---------- 页脚 ---------- */
+.home .footer-nav { text-align: center; }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 860px) {
+  .topbar { flex-wrap: wrap; gap: .4rem 1rem; }
+  .topbar a { margin-left: 1rem; }
+  .hero { grid-template-columns: 1fr; gap: 2rem; }
+  li.lesson { grid-template-columns: 24px 1fr; }
+  .commit-box { grid-column: 2; justify-self: start; margin-top: .3rem; }
+  .lesson-body .outcome { white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tline { animation: none; opacity: 1; }
+  .hero h1 .cursor { animation: none; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body class="home">
+
+<header class="topbar">
+  <span class="repo">git-learning ~/workspace</span>
+  <nav>
+    <a href="MISSION.md">使命</a>
+    <a href="reference/course-map.html">课程地图</a>
+    <a href="RESOURCES.md">学习资源</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div>
+    <h1>不再害怕<br>搞坏仓库<span class="cursor"></span></h1>
+    <p class="lede">
+      <strong>11 节课</strong>，每天 2 小时：从 VSCode 图形界面走到终端命令行，
+      跑通 clone → commit → push 完整工作流，把真实项目安全托管到 GitHub，
+      最后用 GitHub Actions 实现自动测试和自动部署。
+    </p>
+    <div class="hero-links">
+      <a class="primary" href="lessons/0001-git-vs-github-four-zones.html">从第 1 课开始</a>
+      <a href="#track">查看完整路线 ↓</a>
+    </div>
+  </div>
+  <div class="terminal" aria-hidden="true">
+    <div class="term-bar"><i></i><i></i><i></i><span>git — 学习路线 — 80×24</span></div>
+    <div class="term-body"><pre><span class="tline"><span class="t-prompt">$</span> <span class="t-cmd">git log --oneline --graph</span></span>
+<span class="tline"><span class="t-mod1">│ * 01</span> Git 和 GitHub 到底是什么关系？</span>
+<span class="tline"><span class="t-mod1">│ * 02</span> 日常安全网：.gitignore、撤销、提交信息</span>
+<span class="tline"><span class="t-mod2">│ * 03</span> 分支：安全的平行宇宙</span>
+<span class="tline"><span class="t-mod2">│ * 04</span> 正面解决合并冲突</span>
+<span class="tline"><span class="t-mod2">│ * 05</span> 远程仓库与 GitHub 认证</span>
+<span class="tline"><span class="t-mod3">│ * 06</span> 效率三件套：stash / amend / cherry-pick</span>
+<span class="tline"><span class="t-mod3">│ * 07</span> 撤销事故：reset vs revert</span>
+<span class="tline"><span class="t-mod4">│ * 08</span> 把项目打造成像样的开源仓库</span>
+<span class="tline"><span class="t-mod4">│ * 09</span> CI/CD 概念与第一个 GitHub Actions</span>
+<span class="tline"><span class="t-mod4">│ * 10</span> 实战：自动测试 + 自动部署</span>
+<span class="tline"><span class="t-mod4">│ * 11</span> 毕业项目：完整开源发布流程 <span class="t-tag">tag: v1.0 🎓</span></span>
+<span class="tline"><span class="t-dim">│</span></span>
+<span class="tline"><span class="t-prompt">$</span> <span class="t-cmd">git status</span></span>
+<span class="tline">On branch <span class="t-tag">main</span></span>
+<span class="tline">Your branch is ahead of <span class="t-dim">'origin/main'</span> by <span class="t-hash" id="status-count">0</span> commits.</span>
+<span class="tline"><span class="t-prompt">$</span> <span class="cursor" style="background:#e8e6e3"></span></span></pre></div>
+  </div>
+</section>
+
+<div class="section-head" id="track" style="margin-top:0">
+  <h2>课程路线</h2>
+  <span class="sub">每天 1 课，约 40 分钟 + 动手任务</span>
+  <span class="chip"><b id="done-count">0</b> / 11 已提交</span>
+</div>
+
+<ol class="track" id="course-track">
+
+  <li class="module" style="--mod: var(--accent)">
+    <span class="mod-node"></span>
+    <h3>模块一 · 生存基础<span class="mod-sub">先跑通日常闭环，建立"错了也能救回来"的安全感</span></h3>
+  </li>
+  <li class="lesson" style="--mod: var(--accent)" data-lesson="01">
+    <span class="node"></span>
+    <div class="lesson-body">
+      <a href="lessons/0001-git-vs-github-four-zones.html"><span class="lid">01</span>Git 和 GitHub 到底是什么关系？<span class="done-mark">✓ committed</span></a>
+      <p class="outcome">Git 是什么、git init 初始化与 .git，四个区域心智模型，跑通 add → commit → push 闭环</p>
+    </div>
+    <label class="commit-box"><input type="checkbox">已提交</label>
+  </li>
+  <li class="lesson" style="--mod: var(--accent)" data-lesson="02">
+    <span class="node"></span>
+    <div class="lesson-body">
+      <a href="lessons/0002-gitignore-undo-commit-message.html"><span class="lid">02</span>日常安全网：.gitignore、撤销、提交信息<span class="done-mark">✓ committed</span></a>
+      <p class="outcome">.gitignore、restore / amend 撤销、规范提交信息</p>
+    </div>
+    <label class="commit-box"><input type="checkbox">已提交</label>
+  </li>
+
+  <li class="module" style="--mod: var(--green)">
+    <span class="mod-node"></span>
+    <h3>模块二 · 分支与协作基础<span class="mod-sub">学会在平行宇宙里工作，连冲突都不再可怕</span></h3>
+  </li>
+  <li class="lesson" style="--mod: var(--green)" data-lesson="03">
+    <span class="node"></span>
+    <div class="lesson-body">
+      <a href="lessons/0003-branches-and-merge.html"><span class="lid">03</span>分支：安全的平行宇宙<span class="done-mark">✓ committed</span></a>
+      <p class="outcome">创建 → 开发 → 合并循环 + Learn Git Branching 练习</p>
+    </div>
+    <label class="commit-box"><input type="checkbox">已提交</label>
+  </li>
+  <li class="lesson" style="--mod: var(--green)" data-lesson="04">
+    <span class="node"></span>
+    <div class="lesson-body">
+      <a href="lessons/0004-merge-conflicts.html"><span class="lid">04</span>正面解决合并冲突<span class="done-mark">✓ committed</span></a>
+      <p class="outcome">故意制造并解决冲突，掌握 --abort 逃生门</p>
+    </div>
+    <label class="commit-box"><input type="checkbox">已提交</label>
+  </li>
+  <li class="lesson" style="--mod: var(--green)" data-lesson="05">
+    <span class="node"></span>
+    <div class="lesson-body">
+      <a href="lessons/0005-remotes-and-auth.html"><span class="lid">05</span>远程仓库与 GitHub 认证<span class="done-mark">✓ committed</span></a>
+      <p class="outcome">origin / push -u / SSH 免密登录</p>
+    </div>
+    <label class="commit-box"><input type="checkbox">已提交</label>
+  </li>
+
+  <li class="module" style="--mod: var(--purple)">
+    <span class="mod-node"></span>
+    <h3>模块三 · 掌控历史<span class="mod-sub">效率工具 + 事故救援，还有保命的 reflog</span></h3>
+  </li>
+  <li class="lesson" style="--mod: var(--purple)" data-lesson="06">
+    <span class="node"></span>
+    <div class="lesson-body">
+      <a href="lessons/0006-stash-amend-cherry-pick.html"><span class="lid">06</span>效率三件套：stash / amend / cherry-pick<span class="done-mark">✓ committed</span></a>
+      <p class="outcome">临时收工、改上次提交、跨分支摘提交</p>
+    </div>
+    <label class="commit-box"><input type="checkbox">已提交</label>
+  </li>
+  <li class="lesson" style="--mod: var(--purple)" data-lesson="07">
+    <span class="node"></span>
+    <div class="lesson-body">
+      <a href="lessons/0007-undo-emergency.html"><span class="lid">07</span>撤销事故：reset vs revert<span class="done-mark">✓ committed</span></a>
+      <p class="outcome">reset 三模式 vs revert，reflog 救命药</p>
+    </div>
+    <label class="commit-box"><input type="checkbox">已提交</label>
+  </li>
+
+  <li class="module" style="--mod: var(--blue)">
+    <span class="mod-node"></span>
+    <h3>模块四 · GitHub 与自动化<span class="mod-sub">让仓库像模像样，再让 Actions 替你干活</span></h3>
+  </li>
+  <li class="lesson" style="--mod: var(--blue)" data-lesson="08">
+    <span class="node"></span>
+    <div class="lesson-body">
+      <a href="lessons/0008-github-repo-setup.html"><span class="lid">08</span>把项目打造成像样的开源仓库<span class="done-mark">✓ committed</span></a>
+      <p class="outcome">README / LICENSE / tag / Release</p>
+    </div>
+    <label class="commit-box"><input type="checkbox">已提交</label>
+  </li>
+  <li class="lesson" style="--mod: var(--blue)" data-lesson="09">
+    <span class="node"></span>
+    <div class="lesson-body">
+      <a href="lessons/0009-ci-cd-github-actions-basics.html"><span class="lid">09</span>CI/CD 概念与第一个 GitHub Actions<span class="done-mark">✓ committed</span></a>
+      <p class="outcome">第一条 workflow，学会看失败日志</p>
+    </div>
+    <label class="commit-box"><input type="checkbox">已提交</label>
+  </li>
+  <li class="lesson" style="--mod: var(--blue)" data-lesson="10">
+    <span class="node"></span>
+    <div class="lesson-body">
+      <a href="lessons/0010-actions-deploy.html"><span class="lid">10</span>实战：自动测试 + 自动部署<span class="done-mark">✓ committed</span></a>
+      <p class="outcome">Pages 上线 / 项目 CI / Secrets / tag 自动 Release</p>
+    </div>
+    <label class="commit-box"><input type="checkbox">已提交</label>
+  </li>
+  <li class="lesson" style="--mod: var(--blue)" data-lesson="11">
+    <span class="node"></span>
+    <div class="lesson-body">
+      <a href="lessons/0011-capstone.html"><span class="lid">11</span>毕业项目：完整开源发布流程<span class="done-mark">✓ committed</span></a>
+      <p class="outcome">独立完成 开发 → 合并 → CI → 发布 → 部署 全流程</p>
+    </div>
+    <label class="commit-box"><input type="checkbox">已提交</label>
+  </li>
+</ol>
+
+<div class="section-head">
+  <h2>速查表</h2>
+  <span class="sub">卡住时先查这里，长期复习用</span>
+</div>
+<div class="tree">
+<span class="tree-root">reference/</span><br>
+<span class="t-branch">├──</span> <a href="reference/git-zones.html">git-zones.html</a><span class="t-desc">Git 四个区域：working / stage / local / remote 数据怎么流动</span><br>
+<span class="t-branch">├──</span> <a href="reference/undo-cheatsheet.html">undo-cheatsheet.html</a><span class="t-desc">撤销与急救：改错了、提错了、合错了怎么救</span><br>
+<span class="t-branch">├──</span> <a href="reference/branching-cheatsheet.html">branching-cheatsheet.html</a><span class="t-desc">分支与合并：日常分支操作速查</span><br>
+<span class="t-branch">├──</span> <a href="reference/github-actions-cheatsheet.html">github-actions-cheatsheet.html</a><span class="t-desc">GitHub Actions：workflow 语法与常用写法</span><br>
+<span class="t-branch">└──</span> <a href="reference/course-map.html">course-map.html</a><span class="t-desc">课程地图：全部 11 课总览</span>
+</div>
+
+<div class="section-head">
+  <h2>外部资源</h2>
+  <span class="sub">课内没讲透的，去这里找答案</span>
+</div>
+<div class="resources">
+  <a href="https://git-scm.com/book/zh/v2" target="_blank" rel="noopener">
+    <span class="r-kind">BOOK · 有中文版</span>
+    <span class="r-name">Pro Git（官方书，免费在线）</span>
+    <span class="r-use">任何概念的正统解释；第 2、3 章是核心</span>
+  </a>
+  <a href="https://learngitbranching.js.org/?locale=zh_CN" target="_blank" rel="noopener">
+    <span class="r-kind">INTERACTIVE · 中文</span>
+    <span class="r-name">Learn Git Branching</span>
+    <span class="r-use">可视化闯关游戏，练分支和 commit 树的直觉</span>
+  </a>
+  <a href="https://ohshitgit.com/zh" target="_blank" rel="noopener">
+    <span class="r-kind">CHEAT SHEET · 中文</span>
+    <span class="r-name">Oh Shit Git!</span>
+    <span class="r-use">出事了怎么救：错误提交、错误合并速查</span>
+  </a>
+  <a href="https://docs.github.com/en/get-started/using-git" target="_blank" rel="noopener">
+    <span class="r-kind">DOCS</span>
+    <span class="r-name">GitHub Docs — Get started with Git</span>
+    <span class="r-use">GitHub 侧操作：建仓库、认证、push 报错排查</span>
+  </a>
+  <a href="https://www.atlassian.com/git/tutorials" target="_blank" rel="noopener">
+    <span class="r-kind">TUTORIAL</span>
+    <span class="r-name">Atlassian Git Tutorials</span>
+    <span class="r-use">commit / branch / merge / rebase 的高质量图解</span>
+  </a>
+</div>
+
+<div class="footer-nav">
+  建议节奏：每天 1 课（40 分钟）+ 30 分钟在真实项目里动手。卡住随时问教练。
+</div>
+
+<script>
+(function () {
+  var KEY = "git-course-progress";
+  var lessons = document.querySelectorAll("#course-track li.lesson");
+  var doneCount = document.getElementById("done-count");
+  var statusCount = document.getElementById("status-count");
+
+  var done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { done = {}; }
+
+  function refresh() {
+    var n = 0;
+    lessons.forEach(function (li) {
+      var id = li.dataset.lesson;
+      var box = li.querySelector("input[type=checkbox]");
+      if (done[id]) { li.classList.add("done"); box.checked = true; n++; }
+      else { li.classList.remove("done"); box.checked = false; }
+    });
+    doneCount.textContent = n;
+    statusCount.textContent = n;
+  }
+
+  lessons.forEach(function (li) {
+    var box = li.querySelector("input[type=checkbox]");
+    box.addEventListener("change", function () {
+      if (box.checked) done[li.dataset.lesson] = 1;
+      else delete done[li.dataset.lesson];
+      try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {}
+      refresh();
+    });
+  });
+
+  refresh();
+})();
+</script>
+
+</body>
+</html>

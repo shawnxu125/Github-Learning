@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 9 课 · CI/CD 概念与第一个 GitHub Actions</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1><span class="lesson-no">09</span> · CI/CD 概念与第一个 GitHub Actions</h1>
+<p style="font-family:var(--sans);color:var(--ink-soft);margin-top:-0.5rem;">
+预计用时：45 分钟 · 前置：<a href="./0005-remotes-and-auth.html">第 5 课</a> · 速查表：<a href="../reference/github-actions-cheatsheet.html">Actions 速查表</a>
+</p>
+
+<div class="callout blue">
+<span class="label">本课目标</span>
+理解 CI/CD 到底解决什么问题，写出你的第一个 workflow 文件，让 GitHub 在你每次 push 后自动替你"验货"。
+</div>
+
+<h2>1. CI/CD 是什么（30 秒版）</h2>
+
+<ul>
+  <li><strong>CI 持续集成</strong>：每次 push 后，一台云端机器自动帮你<strong>构建 + 测试</strong>，立刻告诉你这次提交有没有搞坏东西。→ 解决"在我电脑上明明能跑"的问题。</li>
+  <li><strong>CD 持续部署</strong>：测试通过后，自动<strong>发布/部署</strong>（上线网站、发 Release、推镜像）。→ 解决"手动发布又慢又容易漏步骤"的问题。</li>
+</ul>
+
+<p>对你的个人项目意味着：<strong>你 push，机器人验货，验完自动发布</strong>。你只负责写代码。</p>
+
+<h2>2. GitHub Actions 核心概念（四个词）</h2>
+
+<p>GitHub Actions 是 GitHub 自带的免费 CI/CD 系统（个人公开仓库免费额度非常充裕）。四个词就能读懂它：</p>
+
+<table>
+  <tr><th>词</th><th>含义</th><th>类比</th></tr>
+  <tr><td><strong>workflow</strong></td><td>一个自动化流程，= <code>.github/workflows/</code> 下的一个 yml 文件</td><td>剧本</td></tr>
+  <tr><td><strong>trigger 触发</strong></td><td>什么时候开演：on: push / pull_request / workflow_dispatch…</td><td>开演通知</td></tr>
+  <tr><td><strong>job 任务</strong></td><td>一台云端虚拟机上跑的一大块活（如 build、test）</td><td>一个剧组</td></tr>
+  <tr><td><strong>step 步骤</strong></td><td>剧组里的一条条具体指令（checkout 代码、装环境、跑命令）</td><td>一句台词</td></tr>
+</table>
+
+<h2>3. 解剖第一个 workflow</h2>
+
+<p>把这段保存到项目的 <code>.github/workflows/hello.yml</code>，push 后去仓库的 <strong>Actions</strong> 标签页看它跑：</p>
+
+<pre><code>name: 我的第一个流水线          <span class="cmt"># 显示在 Actions 页面的名字</span>
+
+<span class="hl">on:</span> [push]                    <span class="cmt"># 触发条件：任何 push</span>
+
+jobs:
+  <span class="hl">check:</span>                       <span class="cmt"># job id</span>
+    runs-on: ubuntu-latest      <span class="cmt"># 用 GitHub 免费的 Ubuntu 虚拟机</span>
+    steps:
+      - name: 领取代码
+        uses: actions/checkout@v4        <span class="cmt"># 官方动作：把仓库 clone 到虚拟机</span>
+      - name: 打个招呼
+        run: echo "你好，CI！"
+      - name: 看看仓库里有什么
+        run: ls -la</code></pre>
+
+<p>两个关键动作类型：<code>uses:</code> = 复用别人写好的<strong>动作（Action）</strong>（如 checkout）；<code>run:</code> = 直接在虚拟机里执行 <strong>shell 命令</strong>。整个 Actions 就是这两样东西的乐高。</p>
+
+<div class="callout green">
+<span class="label">去哪看结果</span>
+仓库网页 → Actions 标签 → 点进最新运行记录，能看到每一步的实时日志，绿✔红✘一目了然。失败了点进去看红色那步的日志即可。
+</div>
+
+<div class="quiz" data-quiz='{"title":"小测 1：CI（持续集成）解决的核心问题是？","options":["push 后自动构建测试立刻发现问题","自动修复代码里所有的逻辑错误","替代 Git 完成代码的版本管理","让代码在用户电脑上跑得更快"],"answer":0,"explain":"CI = 每次提交都被自动验货，问题在提交后几分钟内暴露，而不是上线后。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 2：workflow 文件必须放在哪里？","options":[".github/workflows/ 目录里","仓库根目录下 config.yml","GitHub 网页后台在线编辑",".git/config 文件末尾追加"],"answer":0,"explain":"每个 .yml/.yaml 文件就是一条流水线，放在 .github/workflows/ 下 GitHub 才会识别。"}'></div>
+
+<div class="quiz" data-quiz='{"title":"小测 3：yml 里 uses: actions/checkout@v4 的作用是？","options":["把仓库代码下载到运行虚拟机","把运行结果推送到远程仓库","把本地改动提交到当前分支","把虚拟机环境重置为初始状态"],"answer":0,"explain":"CI 虚拟机是全新的空机器，checkout 第一步把代码 clone 下来，后续步骤才有东西可跑。几乎每条流水线的第一步都是它。"}'></div>
+
+<h2>4. 动手任务</h2>
+
+<ol class="tasklist">
+  <li>在 VSCode 里创建 <code>.github/workflows/hello.yml</code>，粘贴上面的示例，commit + push。</li>
+  <li>打开仓库 → Actions 标签页，围观流水线自动运行，点开看每一步日志。</li>
+  <li>改造它：加一个 step <code>run: git log --oneline -5</code>，push，确认新 step 出现在日志里。</li>
+  <li>故意制造失败：把某个 run 改成 <code>run: exit 1</code>，push，观察红色 ✘ 和页面通知邮件。学会看失败日志比成功更重要。</li>
+  <li>修好它，让流水线重新变绿。</li>
+</ol>
+
+<div class="callout">
+<span class="label">下一步预告</span>
+hello 只是玩具。下一课我们会根据你的<strong>真实项目类型</strong>（网页？Node？Python？）配置真正的自动测试，再做自动部署。做完这课告诉我你的项目是什么技术栈。
+</div>
+
+<h2>5. 本课推荐精读</h2>
+
+<p>📖 <a href="https://docs.github.com/zh/actions/quickstart">GitHub Docs: Actions 快速入门</a>（官方，含本课的正式版本）。概念全景见 <a href="https://docs.github.com/zh/actions/learn-github-actions/understanding-github-actions">Understanding GitHub Actions</a>。</p>
+
+<div class="footer-nav">
+📌 <a href="../reference/github-actions-cheatsheet.html">Actions 速查表</a> · 上一课：<a href="./0008-github-repo-setup.html">08 开源仓库门面</a><br>
+下一课：<a href="./0010-actions-deploy.html">10 · 实战：自动测试 + 自动部署</a>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>
