@@ -12,3 +12,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+      # 如果是纯 HTML 项目，跳过构建，直接发布整个目录：
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .          # 有构建产物就写 dist/ 或 build/
+      - uses: actions/deploy-pages@v4
