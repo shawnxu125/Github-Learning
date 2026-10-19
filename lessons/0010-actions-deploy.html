@@ -10,7 +10,7 @@
 
 <h1><span class="lesson-no">10</span> · 实战：自动测试 + 自动部署</h1>
 <p style="font-family:var(--sans);color:var(--ink-soft);margin-top:-0.5rem;">
-预计用时：50 分钟 · 前置：<a href="./0009-ci-cd-github-actions-basics.html">第 9 课</a> · 速查表：<a href="../reference/github-actions-cheatsheet.html">Actions 速查表</a>
+预计用时：60-75 分钟（选一条路线走通即可） · 前置：<a href="./0009-ci-cd-github-actions-basics.html">第 9 课</a> · 速查表：<a href="../reference/github-actions-cheatsheet.html">Actions 速查表</a>
 </p>
 
 <div class="callout blue">
@@ -25,7 +25,19 @@
 
 <h2>1. 路线 A：静态网站 / 文档 → GitHub Pages（最简单，强烈推荐先走通）</h2>
 
-<p>GitHub Pages 免费托管静态站点，且官方提供了现成部署 Action。任何项目（React/Vue 构建产物、纯 HTML、文档站）都适用：</p>
+<p>GitHub Pages 免费托管静态站点。整条路线就 4 步：<strong>建 workflow 文件 → 设 Pages 源 → 看机器人干活 → 打开网页验收</strong>。下面逐步带你做。</p>
+
+<h3>Step 1 · 创建 workflow 文件（路径是固定的，别写错）</h3>
+
+<p>Actions 只认仓库根目录下 <code>.github/workflows/</code> 里的 yml 文件——<strong>这两个文件夹名和位置是硬规定</strong>，文件名倒可以随便取（惯例叫 <code>deploy.yml</code>）。</p>
+
+<p>最省事的方式是直接在 GitHub 网页上建，不用碰本地项目：</p>
+
+<ol>
+  <li>打开仓库主页 → 文件列表上方 <em>Add file → Create new file</em></li>
+  <li>在文件名输入框里输入完整路径：<code>.github/workflows/deploy.yml</code>（输入斜杠时会自动创建文件夹）</li>
+  <li>粘贴下面的内容，右上角 <em>Commit changes</em> 提交——<strong>网页上 commit 就等于 push，提交那一瞬间 workflow 已经被触发</strong></li>
+</ol>
 
 <pre><code>name: 构建并部署到 Pages
 on:
@@ -47,9 +59,54 @@ jobs:
           path: .          <span class="cmt"># 有构建产物就写 dist/ 或 build/</span>
       - uses: actions/deploy-pages@v4</code></pre>
 
-<p>然后在仓库 <em>Settings → Pages</em> 把 Source 设为 <strong>GitHub Actions</strong>。push 后访问 <code>https://你的用户名.github.io/仓库名/</code>——你的代码上线了。</p>
+<div class="callout blue">
+<span class="label">path 写什么？</span>
+问自己一个问题：<strong>浏览器直接打开哪个文件夹里的 index.html 能看到你的网站，path 就写哪个。</strong>纯 HTML 且 index.html 在仓库根目录 → <code>path: .</code>；React/Vue 项目 → 先加构建步骤（<code>npm ci && npm run build</code>），path 写 <code>dist/</code> 或 <code>build/</code>。
+</div>
+
+<h3>Step 2 · 把 Pages 源设为 GitHub Actions（必做，漏了必报错）</h3>
+
+<ol>
+  <li>仓库主页 → 顶部 <em>Settings</em> 标签（需要仓库管理员权限）</li>
+  <li>左侧边栏 <em>Code and automation</em> 分组下点 <em>Pages</em></li>
+  <li>在 <em>Build and deployment</em> 下，把 <em>Source</em> 下拉框从 "Deploy from a branch" 改成 <strong>GitHub Actions</strong>（选完自动保存，没有保存按钮）</li>
+</ol>
+
+<h3>Step 3 · 看机器人干活</h3>
+
+<p>回到仓库主页 → 顶部 <em>Actions</em> 标签 → 点最新那次运行 → 等所有步骤变绿。两个验收点：</p>
+
+<ul>
+  <li>展开最后一步的日志，里面会直接打印部署完成的 URL：<code>https://你的用户名.github.io/仓库名/</code></li>
+  <li>仓库主页右侧边栏会出现 <em>Deployments</em> 记录</li>
+</ul>
+
+<h3>Step 4 · 验收上线</h3>
+
+<p>浏览器打开 <code>https://你的用户名.github.io/仓库名/</code>（首次部署后要等 1-2 分钟才能打开）。看到页面那一刻，你就完成了从本地到全自动上线的闭环 🎉</p>
+
+<h3>路线 A 常见故障</h3>
+
+<table>
+  <tr><th>现象</th><th>原因</th><th>解决</th></tr>
+  <tr><td>Actions 里报错 "Pages not yet set up"</td><td>Step 2 没做，Source 还不是 GitHub Actions</td><td>回去把 Source 改成 GitHub Actions，重跑 workflow</td></tr>
+  <tr><td>Actions 标签里空空如也</td><td>yml 没放在 <code>.github/workflows/</code> 下，或文件名后缀不是 .yml/.yaml，或没提交到 main</td><td>检查路径、后缀和分支名</td></tr>
+  <tr><td>全绿但打开是 404</td><td><code>path</code> 指错了，产物里没有 index.html</td><td>确认 index.html 在哪个目录，path 就写那里</td></tr>
+  <tr><td>页面能开但样式/图片全挂</td><td>站点在 <code>/仓库名/</code> 子路径下，资源用了绝对路径</td><td>资源改用相对路径；框架站去查该框架的 base path 配置</td></tr>
+</table>
 
 <h2>2. 路线 B：Node.js 项目 → 自动安装依赖 + 测试</h2>
+
+<div class="callout green">
+<span class="label">开工前自检（一半的失败都省在这里）</span>
+<ul style="margin:.3rem 0 0">
+  <li>先在本地终端跑 <code>npm test</code>，确认是绿的——CI 只是在一台干净机器上重跑你的命令，本地红它必红</li>
+  <li><code>package-lock.json</code> 必须存在且已提交——<code>npm ci</code> 靠它安装，没有它第一步就报错</li>
+  <li>项目没有测试？把 <code>npm test</code> 换成 <code>npm run build</code>，先验证能构建也算 CI</li>
+</ul>
+</div>
+
+<p>建文件的方式和路线 A 的 Step 1 完全一样：网页上 <em>Add file → Create new file</em>，路径输 <code>.github/workflows/ci.yml</code>，粘贴下面内容，Commit。然后去 <em>Actions</em> 标签看变绿。</p>
 
 <pre><code>name: CI
 on: [push]
@@ -60,12 +117,29 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 20      <span class="cmt"># 改成和你本地一致：终端跑 node -v 看版本号</span>
+          cache: npm            <span class="cmt"># 缓存依赖，下次跑得快（依赖 package-lock.json）</span>
       - run: npm ci
-      - run: npm test        <span class="cmt"># 没有测试就先跑 npm run build 验证能构建</span></code></pre>
+      - run: npm test</code></pre>
+
+<table>
+  <tr><th>现象</th><th>原因</th><th>解决</th></tr>
+  <tr><td><code>npm ci error ENOENT package-lock.json</code></td><td>锁文件没提交到仓库</td><td>本地 <code>npm install</code> 生成后 commit + push</td></tr>
+  <tr><td>本地能过，CI 红</td><td>Node 版本不一致，或本地有残留环境变量/全局包</td><td>把 <code>node-version</code> 改成和你本地一致；看 CI 日志里具体哪步红的</td></tr>
+  <tr><td>测试需要数据库/API key 才能跑</td><td>测试依赖外部服务</td><td>暂时超出本课范围，把报错贴给我单独设计</td></tr>
+</table>
 
 <h2>3. 路线 C：Python 项目</h2>
+
+<div class="callout green">
+<span class="label">开工前自检</span>
+<ul style="margin:.3rem 0 0">
+  <li>有 <code>requirements.txt</code> 吗？没有就在项目目录里生成：<code>pip freeze &gt; requirements.txt</code>（最好在你的虚拟环境里生成，列表才准），然后 commit + push</li>
+  <li>有测试文件吗？<code>pytest</code> 找不到任何测试会以退出码 5 结束——CI 会红。没有测试就先把那行换成 <code>run: python -m compileall .</code>（验证所有文件能编译）或冒烟跑一下主程序</li>
+</ul>
+</div>
+
+<p>同样在网页上建 <code>.github/workflows/ci.yml</code>：</p>
 
 <pre><code>name: CI
 on: [push]
@@ -76,36 +150,69 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.12"   <span class="cmt"># 改成和你本地一致：python --version 看版本</span>
       - run: pip install -r requirements.txt
-      - run: pytest           <span class="cmt"># 或 python 你的主程序.py 做冒烟测试</span></code></pre>
+      - run: pytest                <span class="cmt"># 没测试就先换成 python -m compileall .</span></code></pre>
+
+<table>
+  <tr><th>现象</th><th>原因</th><th>解决</th></tr>
+  <tr><td><code>ModuleNotFoundError: No module named 'xxx'</code></td><td>那个包没写进 requirements.txt</td><td><code>pip freeze &gt; requirements.txt</code> 重新生成后 push</td></tr>
+  <tr><td>pytest 显示 <code>exit code 5</code> / no tests ran</td><td>项目里没有测试文件</td><td>写个最小测试，或换 compileall 冒烟检查</td></tr>
+  <tr><td>本地能跑 CI 红</td><td>Python 版本不一致</td><td><code>python-version</code> 改成和本地一致</td></tr>
+</table>
 
 <h2>4. Secrets：密码不要写在 yml 里</h2>
 
-<p>部署要用的密钥（服务器密码、API key、token）放进 GitHub 仓库 <em>Settings → Secrets and variables → Actions → New repository secret</em>，yml 里这样引用，公开仓库也安全：</p>
+<p>部署要用的密钥（服务器密码、API key、token）不能写进 yml——公开仓库里任何人都看得到，而且 git 历史里永远抹不掉。正确做法分两步：</p>
+
+<h3>第一步：把密钥存进 GitHub</h3>
+
+<ol>
+  <li>仓库 <em>Settings</em> → 左侧 <em>Secrets and variables</em> → <em>Actions</em></li>
+  <li>右上角 <em>New repository secret</em></li>
+  <li>Name 填 <code>DEPLOY_TOKEN</code>（名字全大写+下划线，引用时大小写必须一致），Secret 粘贴值 → <em>Add secret</em></li>
+</ol>
+
+<p>存进去后就<strong>看不见了</strong>（只能覆盖或删），这是设计如此，不是 bug。</p>
+
+<h3>第二步：在 yml 里引用</h3>
 
 <pre><code>- name: 部署
-  run: ./deploy.sh
+  run: echo "token 是 $DEPLOY_TOKEN"
   env:
     DEPLOY_TOKEN: <span class="hl">${{ secrets.DEPLOY_TOKEN }}</span></code></pre>
 
+<p>跑一次去日志里看：那行会显示 <code>token 是 ***</code>——GitHub 自动把密钥打码，这就是它在保护你。</p>
+
 <div class="callout">
 <span class="label">有自己的服务器？</span>
-服务器部署的常见做法：Actions 通过 SSH 登录你的服务器执行 <code>git pull && 重启服务</code>（用 <code>appleboy/ssh-action</code> + SSH secret）。有这个需求告诉我，我给你出定制版任务。
+服务器部署的常见做法：Actions 通过 SSH 登录你的服务器执行 <code>git pull &&amp; 重启服务</code>（用 <code>appleboy/ssh-action</code> + SSH secret）。有这个需求告诉我，我给你出定制版任务。
 </div>
 
 <h2>5. 加分项：打 tag 自动发 Release</h2>
 
-<p>回忆第 8 课手动发 Release 的活儿，交给机器人——在任意流水线里加：</p>
+<p>回忆第 8 课手动发 Release 的活儿，交给机器人。在仓库里新建 <code>.github/workflows/release.yml</code>：</p>
 
-<pre><code>on:
+<pre><code>name: 发 Release
+on:
   push:
     tags: ["v*"]        <span class="cmt"># 只在推 v 开头的 tag 时触发</span>
 
-<span class="cmt"># jobs 里加一步：</span>
-- uses: softprops/action-gh-release@v2   <span class="cmt"># 自动创建 Release</span></code></pre>
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   <span class="cmt"># 创建 Release 需要写权限，不写会报 403</span>
+    steps:
+      - uses: actions/checkout@v4
+      - uses: softprops/action-gh-release@v2   <span class="cmt"># 自动创建 Release</span></code></pre>
 
-<p>从此发布流程 = <code>git tag v1.1.0 && git push origin v1.1.0</code>，两条命令，测试、发布全部自动。</p>
+<p>然后在本地终端：</p>
+
+<pre><code>git tag v0.2.0
+git push origin v0.2.0     <span class="cmt"># 注意：tag 不会随普通 push 自动上传，要单独推</span></code></pre>
+
+<p>去仓库主页左侧 <em>Releases</em> 看效果——从此发布 = 两条命令，测试、发布全部自动。</p>
 
 <div class="quiz" data-quiz='{"title":"小测 1：Pages 路线里 actions/checkout 为什么仍是第一步？","options":["虚拟机是空的需先取回代码","Pages 要求代码必须经过它审核","checkout 会顺便完成页面部署","它能把页面转换成静态文件"],"answer":0,"explain":"每台 CI 虚拟机都是全新空机器，所有路线的第一步都是 checkout。"}'></div>
 
@@ -113,13 +220,15 @@ jobs:
 
 <div class="quiz" data-quiz='{"title":"小测 3：on: push: tags: [\"v*\"] 的流水线何时触发？","options":["推送匹配 v 开头的标签时","每次向任意分支推送代码时","合并 Pull Request 到 main 时","手动在网页点击按钮运行时"],"answer":0,"explain":"tag 过滤器只在推送匹配模式的 tag 时触发，v* 匹配 v1.0.0、v2.3 等。"}'></div>
 
+<div class="quiz" data-quiz='{"title":"小测 4：你把 workflow 文件建在了 workflows/deploy.yml（仓库根目录下的 workflows 文件夹），push 后 Actions 里却没有任何运行，为什么？","options":["必须在 .github/workflows/ 下，少了一层隐藏文件夹","文件名必须叫 main.yml 才生效","yml 文件不能从网页上创建","tag 触发的流水线不会显示在 Actions 里"],"answer":0,"explain":"固定路径是仓库根目录下的 .github/workflows/，文件夹名前的点不能省。"}'></div>
+
 <h2>6. 动手任务</h2>
 
 <ol class="tasklist">
-  <li>按你的项目路线（A/B/C）写好 workflow 文件，push，让 CI 变绿。</li>
-  <li>路线 A：打开你的 <code>username.github.io</code> 页面截图🎉 / 路线 B、C：故意写坏代码让测试变红，再修绿。</li>
-  <li>加一个 secret（随便起名叫 DEMO_SECRET，值写今天的日期），在 step 里 <code>echo</code> 引用它（日志里应显示 *** 而不是明文——这正是它在保护你）。</li>
-  <li>（可选）加上 tag 自动 Release，打 <code>v0.2.0</code> 试试全自动发布。</li>
+  <li>按你的项目路线（A/B/C）在网页上创建 <code>.github/workflows/</code> 下的 workflow 文件，push，去 Actions 标签看到绿色对号。</li>
+  <li>路线 A：打开你的 <code>username.github.io/仓库名</code> 页面截图🎉 / 路线 B、C：故意写坏一个测试让它变红，看一次红色长什么样（知道失败长什么样才会看日志），再修绿。</li>
+  <li>加一个 secret（起名叫 DEMO_SECRET，值写今天的日期），在某个 step 里用 <code>env</code> + <code>echo</code> 引用它——去日志里确认它显示为 <code>***</code> 而不是明文（这正是它在保护你）。</li>
+  <li>（可选）按第 5 节建好 release.yml，本地打 <code>v0.2.0</code> 并单独推 tag，去 Releases 页看自动发布的效果。</li>
 </ol>
 
 <h2>7. 本课推荐精读</h2>
